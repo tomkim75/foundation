@@ -53,7 +53,9 @@ public:
 	typedef RbTreeItr iterator;
 
 	RbTree::RbTree(void);
+
 	void insert(int value);
+	iterator find(int value) const;
 	iterator begin(void) const;
 	iterator end(void) const;
 	iterator last(void) const;
