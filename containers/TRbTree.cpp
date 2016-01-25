@@ -145,6 +145,24 @@ RbTree::insert(int value)
 	insert(node);
 }
 
+RbTree::iterator
+RbTree::find(int value) const
+{
+	Node* node = m_root;
+
+	while (node != Node::NIL)
+	{
+		if (value < node->m_value)
+			node = node->m_left;
+		else if (value > node->m_value)
+			node = node->m_right;
+		else
+			return iterator(this, node);
+	}
+
+	return iterator(this, NULL);
+}
+
 inline void
 RbTree::leftRotate(Node* x)
 {
