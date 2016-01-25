@@ -55,6 +55,9 @@ public:
 	RbTree::RbTree(void);
 
 	void insert(int value);
+	void erase(int value);
+	void erase(iterator itr);
+
 	iterator find(int value) const;
 	iterator begin(void) const;
 	iterator end(void) const;
@@ -69,4 +72,9 @@ private:
 	void rightRotate(Node* x);
 	void insert(Node* z);
 	void insertFixup(Node* z);
+
+	void transplant(Node* u, Node* v);
+	Node* minimum(Node* x);
+	void erase(Node* v);
+	void eraseFixup(Node* x);
 };
