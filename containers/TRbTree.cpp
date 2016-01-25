@@ -6,6 +6,7 @@
 #pragma once
 
 #include "TRbTree.h"
+#include <cassert>
 
 // RbTreeNode
 //
@@ -15,11 +16,124 @@ RbTreeNode::RbTreeNode(void)
 	: m_color(BLACK), m_parent(NIL), m_right(NIL), m_left(NIL), m_value(0)
 { }
 
+// RbTreeItr
+//
+RbTreeItr::RbTreeItr(const RbTree* tree, Node* node)
+	: m_tree(tree), m_node(node)
+{ }
+
+RbTreeItr::RbTreeItr(const RbTreeItr& other)
+	: m_tree(other.m_tree), m_node(other.m_node)
+{ }
+
+bool
+RbTreeItr::operator==(const RbTreeItr& other) const
+{
+	return m_node == other.m_node;
+}
+
+bool
+RbTreeItr::operator!=(const RbTreeItr& other) const
+{
+	return m_node != other.m_node;
+}
+
+
+int
+RbTreeItr::operator*(void) const
+{
+	return m_node->m_value;
+}
+
+RbTreeItr
+RbTreeItr::operator++(void)
+{
+	assert(m_node != NULL);
+
+	if (m_node->m_right != Node::NIL)
+	{
+		m_node = m_node->m_right;
+
+		while (m_node->m_left != Node::NIL)
+			m_node = m_node->m_left;
+
+		return *this;
+	}
+
+	while (1)
+	{
+		Node* m_old = m_node;
+		m_node = m_node->m_parent;
+
+		if (m_node == Node::NIL || m_node->m_left == m_old)
+			break;
+	}
+
+	if (m_node == Node::NIL)
+		m_node = NULL;
+
+	return *this;
+}
+
+RbTreeItr
+RbTreeItr::operator--(void)
+{
+	assert(m_node != NULL);
+
+	if (m_node->m_left != Node::NIL)
+	{
+		m_node = m_node->m_left;
+
+		while (m_node->m_right != Node::NIL)
+			m_node = m_node->m_right;
+
+		return *this;
+	}
+
+	while (1)
+	{
+		Node* m_old = m_node;
+		m_node = m_node->m_parent;
+
+		if (m_node == Node::NIL || m_node->m_right == m_old)
+			break;
+	}
+
+	if (m_node == Node::NIL)
+		m_node = NULL;
+
+	return *this;
+}
+
 // RbTree
 //
 RbTree::RbTree(void)
 {
 	m_root = Node::NIL;
+}
+
+RbTree::iterator
+RbTree::begin(void) const
+{
+	Node* node = m_root;
+	if (m_root == Node::NIL) return end();
+	while (node->m_left != Node::NIL) node = node->m_left;
+	return iterator(this, node);
+}
+
+RbTree::iterator
+RbTree::end(void) const
+{
+	return iterator(this, NULL);
+}
+
+RbTree::iterator
+RbTree::last(void) const
+{
+	Node* node = m_root;
+	if (m_root == Node::NIL) return end();
+	while (node->m_right != Node::NIL) node = node->m_right;
+	return iterator(this, node);
 }
 
 void
