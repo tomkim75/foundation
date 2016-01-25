@@ -145,6 +145,22 @@ RbTree::insert(int value)
 	insert(node);
 }
 
+void
+RbTree::erase(int value)
+{
+	iterator itr = find(value);
+
+	if (itr != end())
+		erase(itr.m_node);
+}
+
+void
+RbTree::erase(iterator itr)
+{
+	if (itr != end())
+		erase(itr.m_node);
+}
+
 RbTree::iterator
 RbTree::find(int value) const
 {
@@ -295,4 +311,147 @@ RbTree::insertFixup(Node* z)
 	}
 
 	m_root->m_color = Node::BLACK;
+}
+
+void
+RbTree::transplant(Node* u, Node* v)
+{
+	if (u->m_parent == Node::NIL)
+		m_root = v;
+	else if (u == u->m_parent->m_left)
+		u->m_parent->m_left = v;
+	else
+		u->m_parent->m_right = v;
+
+	v->m_parent = u->m_parent;
+}
+
+RbTree::Node*
+RbTree::minimum(Node* x)
+{
+	while (x->m_left != Node::NIL)
+		x = x->m_left;
+	return x;
+}
+
+void
+RbTree::erase(Node* z)
+{
+	Node* x = NULL;
+	Node* y = z;
+	Node::Color yOriginalColor = y->m_color;
+
+	if (z->m_left == Node::NIL)
+	{
+		x = z->m_right;
+		transplant(z, z->m_right);
+	}
+	else if (z->m_right == Node::NIL)
+	{
+		x = z->m_left;
+		transplant(z, z->m_left);
+	}
+	else
+	{
+		y = minimum(z->m_right);
+		Node::Color yOriginalColor = y->m_color;
+		x = y->m_right;
+
+		if (y->m_parent == z)
+			x->m_parent = y;
+		else
+		{
+			transplant(y, y->m_right);
+			y->m_right = z->m_right;
+			y->m_right->m_parent = y;
+		}
+
+		transplant(z, y);
+		y->m_left = z->m_left;
+		y->m_left->m_parent = y;
+		y->m_color = z->m_color;
+	}
+
+	if (yOriginalColor == Node::BLACK)
+	{
+		eraseFixup(x);
+	}
+}
+
+void
+RbTree::eraseFixup(Node* x)
+{
+	while (x != m_root && x->m_color == Node::BLACK)
+	{
+		if (x == x->m_parent->m_left)
+		{
+			Node* w = x->m_parent->m_right;
+
+			if (w->m_color == Node::RED)
+			{
+				w->m_color = Node::BLACK;
+				x->m_parent->m_color = Node::RED;
+				leftRotate(x->m_parent);
+				w = x->m_parent->m_right;
+			}
+
+			if (w->m_left->m_color == Node::BLACK && w->m_right->m_color == Node::BLACK)
+			{
+				w->m_color = Node::RED;
+				x = x->m_parent;
+			}
+			else
+			{
+				if (w->m_right->m_color == Node::BLACK)
+				{
+					w->m_left->m_color = Node::BLACK;
+					w->m_color = Node::RED;
+					rightRotate(w);
+					w = x->m_parent->m_right;
+				}
+
+				w->m_color = x->m_parent->m_color;
+				x->m_parent->m_color = Node::BLACK;
+				w->m_right->m_color = Node::BLACK;
+				leftRotate(x->m_parent);
+				x = m_root;
+			}
+		}
+		else
+		{
+			Node* w = x->m_parent->m_left;
+
+			if (w->m_color == Node::RED)
+			{
+				w->m_color = Node::BLACK;
+				x->m_parent->m_color = Node::RED;
+				rightRotate(x->m_parent);
+				w = x->m_parent->m_left;
+			}
+
+			if (w->m_right->m_color == Node::BLACK && w->m_left->m_color == Node::BLACK)
+			{
+				w->m_color = Node::RED;
+				x = x->m_parent;
+			}
+			else
+			{
+				if (w->m_left->m_color == Node::BLACK)
+				{
+					w->m_right->m_color = Node::BLACK;
+					w->m_color = Node::RED;
+					leftRotate(w);
+					w = x->m_parent->m_left;
+				}
+
+				w->m_color = x->m_parent->m_color;
+				x->m_parent->m_color = Node::BLACK;
+				w->m_left->m_color = Node::BLACK;
+				rightRotate(x->m_parent);
+				x = m_root;
+			}
+		}
+	}
+
+	x->m_color = Node::BLACK;
 }
