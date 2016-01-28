@@ -12,42 +12,80 @@ template <typename K>
 class RbTreeNode
 {
 	template <typename K> friend class RbTree;
+	template <typename K> friend class RbTreeItrBase;
   	template <typename K> friend class RbTreeItr;
+	template <typename K> friend class RbTreeConstItr;
 
 private:
 	enum Color { RED, BLACK };
 	static RbTreeNode* NIL;
-
-	RbTreeNode(void);
 
 	Color m_color;
 	RbTreeNode* m_parent;
 	RbTreeNode* m_right;
 	RbTreeNode* m_left;
 	K m_key;
+
+	RbTreeNode(void) : m_color(BLACK), m_parent(NIL), m_right(NIL), m_left(NIL), m_key(0) { }
 };
 
 template <typename K>
-class RbTreeItr
+class RbTreeItrBase
 {
-	template <typename K> friend class RbTree;
+protected:
 	typedef RbTreeNode<K> Node;
 	typedef RbTree<K> Tree;
 
-public:
-	RbTreeItr(const RbTreeItr& other);
+	Tree* m_tree;
+	Node* m_node;
 
-	bool operator==(const RbTreeItr& other) const;
-	bool operator!=(const RbTreeItr& other) const;
-	K operator*(void) const;
-	RbTreeItr operator++(void);	
-	RbTreeItr operator--(void);
+	RbTreeItrBase(Tree* tree, Node* node) : m_tree(tree), m_node(node) { }
+	void increment(void);
+	void decrement(void);
+};
+
+template <typename K>
+class RbTreeItr : private RbTreeItrBase<K>
+{
+	template <typename K> friend class RbTree;
+	template <typename K> friend class RbTreeConstItr;
+
+public:
+	RbTreeItr(const RbTreeItr& other) : RbTreeItrBase(other.m_tree, other.m_node) { }
+
+	bool operator==(const RbTreeItr& other) const { return m_node == other.m_node; }
+	bool operator!=(const RbTreeItr& other) const { return m_node != other.m_node; }
+	bool operator==(const RbTreeConstItr<K>& other) const { return m_node == other.m_node; }
+	bool operator!=(const RbTreeConstItr<K>& other) const { return m_node != other.m_node; }
+	RbTreeItr& operator++(void) { increment(); return *this; }
+	RbTreeItr& operator--(void) { decrement(); return *this; }
+	K& operator*(void) { return const_cast<Node*>(m_node)->m_key; }
 
 private:
-	RbTreeItr(const Tree* tree, Node* node);
+	RbTreeItr(const RbTreeConstItr<K>& other) : RbTreeItrBase(other.m_tree, other.m_node) { } // made private to avoid conversion outside of friends
+	RbTreeItr(Tree* tree, Node* node) : RbTreeItrBase(tree, node) { }
+};
 
-	const Tree* m_tree;
-	Node* m_node;
+template <typename K>
+class RbTreeConstItr : private RbTreeItrBase<K>
+{
+	template <typename K> friend class RbTree;
+	template <typename K> friend class RbTreeItr;
+
+public:
+	RbTreeConstItr(const RbTreeConstItr& other) : RbTreeItrBase(other.m_tree, other.m_node) { }
+	RbTreeConstItr(const RbTreeItr<K>& other) : RbTreeItrBase(other.m_tree, other.m_node) { }
+
+	bool operator==(const RbTreeConstItr& other) const { return m_node == other.m_node; }
+	bool operator!=(const RbTreeConstItr& other) const { return m_node != other.m_node; }
+	bool operator==(const RbTreeItr<K>& other) const { return m_node == other.m_node; }
+	bool operator!=(const RbTreeItr<K>& other) const { return m_node != other.m_node; }
+	RbTreeConstItr& operator++(void) { increment(); return *this; }
+	RbTreeConstItr& operator--(void) { decrement(); return *this; }
+	const K& operator*(void) const { return m_node->m_key; }
+
+private:
+	RbTreeConstItr(const Tree* tree, Node* node) : RbTreeItrBase(const_cast<Tree*>(tree), node) { }
 };
 
 template <typename K>
@@ -57,17 +95,23 @@ class RbTree
 
 public:
 	typedef RbTreeItr<K> Iterator;
+	typedef RbTreeConstItr<K> ConstIterator;
 
 	RbTree(void);
 
 	void insert(K key);
 	void erase(K key);
-	void erase(Iterator itr);
+	void erase(const ConstIterator& itr);
 
-	Iterator find(K key) const;
-	Iterator begin(void) const;
-	Iterator end(void) const;
-	Iterator last(void) const;
+	Iterator find(K key) { return Iterator(const_cast<const RbTree*>(this)->find(key)); }
+	Iterator begin(void) { return Iterator(const_cast<const RbTree*>(this)->begin()); }
+	Iterator end(void) { return Iterator(const_cast<const RbTree*>(this)->begin()); }
+	Iterator last(void) { return Iterator(const_cast<const RbTree*>(this)->last()); }
+
+	ConstIterator find(K key) const;
+	ConstIterator begin(void) const;
+	ConstIterator end(void) const;
+	ConstIterator last(void) const;
 
 private:
 	Node* m_root;
@@ -88,47 +132,11 @@ private:
 template <typename K>
 RbTreeNode<K>* RbTreeNode<K>::NIL = new RbTreeNode();
 
-template <typename K>
-RbTreeNode<K>::RbTreeNode(void)
-	: m_color(BLACK), m_parent(NIL), m_right(NIL), m_left(NIL), m_key(0)
-{ }
-
-// RbTreeItr
+// RbTreeItrBase
 //
 template <typename K>
-RbTreeItr<K>::RbTreeItr(const Tree* tree, Node* node)
-	: m_tree(tree), m_node(node)
-{ }
-
-template <typename K>
-RbTreeItr<K>::RbTreeItr(const RbTreeItr& other)
-	: m_tree(other.m_tree), m_node(other.m_node)
-{ }
-
-template <typename K>
-bool
-RbTreeItr<K>::operator==(const RbTreeItr& other) const
-{
-	return m_node == other.m_node;
-}
-
-template <typename K>
-bool
-RbTreeItr<K>::operator!=(const RbTreeItr& other) const
-{
-	return m_node != other.m_node;
-}
-
-template <typename K>
-K
-RbTreeItr<K>::operator*(void) const
-{
-	return m_node->m_key;
-}
-
-template <typename K>
-RbTreeItr<K>
-RbTreeItr<K>::operator++(void)
+void
+RbTreeItrBase<K>::increment(void)
 {
 	assert(m_node != NULL);
 
@@ -139,7 +147,7 @@ RbTreeItr<K>::operator++(void)
 		while (m_node->m_left != Node::NIL)
 			m_node = m_node->m_left;
 
-		return *this;
+		return;
 	}
 
 	while (1)
@@ -154,12 +162,12 @@ RbTreeItr<K>::operator++(void)
 	if (m_node == Node::NIL)
 		m_node = NULL;
 
-	return *this;
+	return;
 }
 
 template <typename K>
-RbTreeItr<K>
-RbTreeItr<K>::operator--(void)
+void
+RbTreeItrBase<K>::decrement(void)
 {
 	assert(m_node != NULL);
 
@@ -170,7 +178,7 @@ RbTreeItr<K>::operator--(void)
 		while (m_node->m_right != Node::NIL)
 			m_node = m_node->m_right;
 
-		return *this;
+		return;
 	}
 
 	while (1)
@@ -185,7 +193,7 @@ RbTreeItr<K>::operator--(void)
 	if (m_node == Node::NIL)
 		m_node = NULL;
 
-	return *this;
+	return;
 }
 
 // RbTree
@@ -197,30 +205,30 @@ RbTree<K>::RbTree(void)
 }
 
 template <typename K>
-typename RbTree<K>::Iterator
+typename RbTree<K>::ConstIterator
 RbTree<K>::begin(void) const
 {
 	Node* node = m_root;
 	if (m_root == Node::NIL) return end();
 	while (node->m_left != Node::NIL) node = node->m_left;
-	return Iterator(this, node);
+	return ConstIterator(this, node);
 }
 
 template <typename K>
-typename RbTree<K>::Iterator
+typename RbTree<K>::ConstIterator
 RbTree<K>::end(void) const
 {
-	return Iterator(this, NULL);
+	return ConstIterator(this, NULL);
 }
 
 template <typename K>
-typename RbTree<K>::Iterator
+typename RbTree<K>::ConstIterator
 RbTree<K>::last(void) const
 {
 	Node* node = m_root;
 	if (m_root == Node::NIL) return end();
 	while (node->m_right != Node::NIL) node = node->m_right;
-	return Iterator(this, node);
+	return ConstIterator(this, node);
 }
 
 template <typename K>
@@ -240,19 +248,19 @@ RbTree<K>::erase(K key)
 	Iterator itr = find(key);
 
 	if (itr != end())
-		erase(itr.m_node);
+		erase(const_cast<Node*>(itr.m_node));
 }
 
 template <typename K>
 void
-RbTree<K>::erase(Iterator itr)
+RbTree<K>::erase(const ConstIterator& itr)
 {
 	if (itr != end())
-		erase(itr.m_node);
+		erase(const_cast<Node*>(itr.m_node));
 }
 
 template <typename K>
-typename RbTree<K>::Iterator
+typename RbTree<K>::ConstIterator
 RbTree<K>::find(K key) const
 {
 	Node* node = m_root;
@@ -264,10 +272,10 @@ RbTree<K>::find(K key) const
 		else if (key > node->m_key)
 			node = node->m_right;
 		else
-			return Iterator(this, node);
+			return ConstIterator(this, node);
 	}
 
-	return Iterator(this, NULL);
+	return ConstIterator(this, NULL);
 }
 
 template <typename K>
