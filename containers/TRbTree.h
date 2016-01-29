@@ -99,16 +99,16 @@ public:
 
 	RbTree(void);
 
-	void insert(K key);
-	void erase(K key);
+	void insert(const K& key);
+	void erase(const K& key);
 	void erase(const ConstIterator& itr);
 
-	Iterator find(K key) { return Iterator(const_cast<const RbTree*>(this)->find(key)); }
+	Iterator find(const K& key) { return Iterator(const_cast<const RbTree*>(this)->find(key)); }
 	Iterator begin(void) { return Iterator(const_cast<const RbTree*>(this)->begin()); }
 	Iterator end(void) { return Iterator(const_cast<const RbTree*>(this)->begin()); }
 	Iterator last(void) { return Iterator(const_cast<const RbTree*>(this)->last()); }
 
-	ConstIterator find(K key) const;
+	ConstIterator find(const K& key) const;
 	ConstIterator begin(void) const;
 	ConstIterator end(void) const;
 	ConstIterator last(void) const;
@@ -233,7 +233,7 @@ RbTree<K>::last(void) const
 
 template <typename K>
 void
-RbTree<K>::insert(K key)
+RbTree<K>::insert(const K& key)
 {
 	Node* node = new Node();
 	node->m_color = Node::RED;
@@ -243,7 +243,7 @@ RbTree<K>::insert(K key)
 
 template <typename K>
 void
-RbTree<K>::erase(K key)
+RbTree<K>::erase(const K& key)
 {
 	Iterator itr = find(key);
 
@@ -261,7 +261,7 @@ RbTree<K>::erase(const ConstIterator& itr)
 
 template <typename K>
 typename RbTree<K>::ConstIterator
-RbTree<K>::find(K key) const
+RbTree<K>::find(const K& key) const
 {
 	Node* node = m_root;
 
