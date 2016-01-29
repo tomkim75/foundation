@@ -105,13 +105,15 @@ public:
 
 	Iterator find(const K& key) { return Iterator(const_cast<const TRbTree*>(this)->find(key)); }
 	Iterator begin(void) { return Iterator(const_cast<const TRbTree*>(this)->begin()); }
-	Iterator end(void) { return Iterator(const_cast<const TRbTree*>(this)->begin()); }
+	Iterator end(void) { return Iterator(const_cast<const TRbTree*>(this)->end()); }
 	Iterator last(void) { return Iterator(const_cast<const TRbTree*>(this)->last()); }
 
 	ConstIterator find(const K& key) const;
 	ConstIterator begin(void) const;
 	ConstIterator end(void) const;
 	ConstIterator last(void) const;
+
+	size_t getDepth(void) const;
 
 private:
 	Node* m_root;
@@ -125,6 +127,8 @@ private:
 	Node* minimum(Node* x);
 	void erase(Node* v);
 	void eraseFixup(Node* x);
+
+	size_t getDepth(Node* node, size_t depth) const;
 };
 
 // TRbTreeNode
@@ -236,7 +240,6 @@ void
 TRbTree<K>::insert(const K& key)
 {
 	Node* node = new Node();
-	node->m_color = Node::RED;
 	node->m_key = key;
 	insert(node);
 }
@@ -337,8 +340,10 @@ TRbTree<K>::insert(Node* z)
 
 		if (z->m_key < x->m_key)
 			x = x->m_left;
-		else
+		else if (z->m_key > x->m_key)
 			x = x->m_right;
+		else
+			assert(false);
 	}
 
 	z->m_parent = y;
@@ -353,7 +358,6 @@ TRbTree<K>::insert(Node* z)
 	z->m_left = Node::NIL;
 	z->m_right = Node::NIL;
 	z->m_color = Node::RED;
-
 	insertFixup(z);
 }
 
@@ -443,6 +447,8 @@ template <typename K>
 void
 TRbTree<K>::erase(Node* z)
 {
+	assert(z != NULL && z != Node::NIL);
+
 	Node* x = NULL;
 	Node* y = z;
 	Node::Color yOriginalColor = y->m_color;
@@ -460,7 +466,7 @@ TRbTree<K>::erase(Node* z)
 	else
 	{
 		y = minimum(z->m_right);
-		Node::Color yOriginalColor = y->m_color;
+		yOriginalColor = y->m_color;
 		x = y->m_right;
 
 		if (y->m_parent == z)
@@ -479,9 +485,10 @@ TRbTree<K>::erase(Node* z)
 	}
 
 	if (yOriginalColor == Node::BLACK)
-	{
 		eraseFixup(x);
-	}
+	
+	// TODO
+	//delete z;
 }
 
 template <typename K>
@@ -561,4 +568,30 @@ TRbTree<K>::eraseFixup(Node* x)
 	}
 
 	x->m_color = Node::BLACK;
+}
+
+template <typename K>
+size_t
+TRbTree<K>::getDepth(void) const
+{
+	if (m_root == Node::NIL)
+		return 0;
+
+	size_t depth = 1;
+	size_t leftDepth = getDepth(m_root->m_left, depth);
+	size_t rightDepth = getDepth(m_root->m_right, depth);
+	return (leftDepth > rightDepth) ? leftDepth : rightDepth;
+}
+
+template <typename K>
+size_t
+TRbTree<K>::getDepth(Node* node, size_t depth) const
+{
+	if (node == Node::NIL)
+		return depth;
+
+	depth++;
+	size_t leftDepth = getDepth(node->m_left, depth);
+	size_t rightDepth = getDepth(node->m_right, depth);
+	return (leftDepth > rightDepth) ? leftDepth : rightDepth;
 }
