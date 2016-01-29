@@ -9,104 +9,104 @@
 #include <cassert>
 
 template <typename K>
-class RbTreeNode
+class TRbTreeNode
 {
-	template <typename K> friend class RbTree;
-	template <typename K> friend class RbTreeItrBase;
-  	template <typename K> friend class RbTreeItr;
-	template <typename K> friend class RbTreeConstItr;
+	template <typename K> friend class TRbTree;
+	template <typename K> friend class TRbTreeItrBase;
+  	template <typename K> friend class TRbTreeItr;
+	template <typename K> friend class TRbTreeConstItr;
 
 private:
 	enum Color { RED, BLACK };
-	static RbTreeNode* NIL;
+	static TRbTreeNode* NIL;
 
 	Color m_color;
-	RbTreeNode* m_parent;
-	RbTreeNode* m_right;
-	RbTreeNode* m_left;
+	TRbTreeNode* m_parent;
+	TRbTreeNode* m_right;
+	TRbTreeNode* m_left;
 	K m_key;
 
-	RbTreeNode(void) : m_color(BLACK), m_parent(NIL), m_right(NIL), m_left(NIL), m_key(0) { }
+	TRbTreeNode(void) : m_color(BLACK), m_parent(NIL), m_right(NIL), m_left(NIL), m_key(0) { }
 };
 
 template <typename K>
-class RbTreeItrBase
+class TRbTreeItrBase
 {
 protected:
-	typedef RbTreeNode<K> Node;
-	typedef RbTree<K> Tree;
+	typedef TRbTreeNode<K> Node;
+	typedef TRbTree<K> Tree;
 
 	Tree* m_tree;
 	Node* m_node;
 
-	RbTreeItrBase(Tree* tree, Node* node) : m_tree(tree), m_node(node) { }
+	TRbTreeItrBase(Tree* tree, Node* node) : m_tree(tree), m_node(node) { }
 	void increment(void);
 	void decrement(void);
 };
 
 template <typename K>
-class RbTreeItr : private RbTreeItrBase<K>
+class TRbTreeItr : private TRbTreeItrBase<K>
 {
-	template <typename K> friend class RbTree;
-	template <typename K> friend class RbTreeConstItr;
+	template <typename K> friend class TRbTree;
+	template <typename K> friend class TRbTreeConstItr;
 
 public:
-	RbTreeItr(const RbTreeItr& other) : RbTreeItrBase(other.m_tree, other.m_node) { }
+	TRbTreeItr(const TRbTreeItr& other) : TRbTreeItrBase(other.m_tree, other.m_node) { }
 
-	bool operator==(const RbTreeItr& other) const { return m_node == other.m_node; }
-	bool operator!=(const RbTreeItr& other) const { return m_node != other.m_node; }
-	bool operator==(const RbTreeConstItr<K>& other) const { return m_node == other.m_node; }
-	bool operator!=(const RbTreeConstItr<K>& other) const { return m_node != other.m_node; }
-	RbTreeItr& operator++(void) { increment(); return *this; }
-	RbTreeItr& operator--(void) { decrement(); return *this; }
+	bool operator==(const TRbTreeItr& other) const { return m_node == other.m_node; }
+	bool operator!=(const TRbTreeItr& other) const { return m_node != other.m_node; }
+	bool operator==(const TRbTreeConstItr<K>& other) const { return m_node == other.m_node; }
+	bool operator!=(const TRbTreeConstItr<K>& other) const { return m_node != other.m_node; }
+	TRbTreeItr& operator++(void) { increment(); return *this; }
+	TRbTreeItr& operator--(void) { decrement(); return *this; }
 	K& operator*(void) { return const_cast<Node*>(m_node)->m_key; }
 
 private:
-	RbTreeItr(const RbTreeConstItr<K>& other) : RbTreeItrBase(other.m_tree, other.m_node) { } // made private to avoid conversion outside of friends
-	RbTreeItr(Tree* tree, Node* node) : RbTreeItrBase(tree, node) { }
+	TRbTreeItr(const TRbTreeConstItr<K>& other) : TRbTreeItrBase(other.m_tree, other.m_node) { } // made private to avoid conversion outside of friends
+	TRbTreeItr(Tree* tree, Node* node) : TRbTreeItrBase(tree, node) { }
 };
 
 template <typename K>
-class RbTreeConstItr : private RbTreeItrBase<K>
+class TRbTreeConstItr : private TRbTreeItrBase<K>
 {
-	template <typename K> friend class RbTree;
-	template <typename K> friend class RbTreeItr;
+	template <typename K> friend class TRbTree;
+	template <typename K> friend class TRbTreeItr;
 
 public:
-	RbTreeConstItr(const RbTreeConstItr& other) : RbTreeItrBase(other.m_tree, other.m_node) { }
-	RbTreeConstItr(const RbTreeItr<K>& other) : RbTreeItrBase(other.m_tree, other.m_node) { }
+	TRbTreeConstItr(const TRbTreeConstItr& other) : TRbTreeItrBase(other.m_tree, other.m_node) { }
+	TRbTreeConstItr(const TRbTreeItr<K>& other) : TRbTreeItrBase(other.m_tree, other.m_node) { }
 
-	bool operator==(const RbTreeConstItr& other) const { return m_node == other.m_node; }
-	bool operator!=(const RbTreeConstItr& other) const { return m_node != other.m_node; }
-	bool operator==(const RbTreeItr<K>& other) const { return m_node == other.m_node; }
-	bool operator!=(const RbTreeItr<K>& other) const { return m_node != other.m_node; }
-	RbTreeConstItr& operator++(void) { increment(); return *this; }
-	RbTreeConstItr& operator--(void) { decrement(); return *this; }
+	bool operator==(const TRbTreeConstItr& other) const { return m_node == other.m_node; }
+	bool operator!=(const TRbTreeConstItr& other) const { return m_node != other.m_node; }
+	bool operator==(const TRbTreeItr<K>& other) const { return m_node == other.m_node; }
+	bool operator!=(const TRbTreeItr<K>& other) const { return m_node != other.m_node; }
+	TRbTreeConstItr& operator++(void) { increment(); return *this; }
+	TRbTreeConstItr& operator--(void) { decrement(); return *this; }
 	const K& operator*(void) const { return m_node->m_key; }
 
 private:
-	RbTreeConstItr(const Tree* tree, Node* node) : RbTreeItrBase(const_cast<Tree*>(tree), node) { }
+	TRbTreeConstItr(const Tree* tree, Node* node) : TRbTreeItrBase(const_cast<Tree*>(tree), node) { }
 };
 
 template <typename K>
-class RbTree
+class TRbTree
 {
-	typedef class RbTreeNode<K> Node;
+	typedef class TRbTreeNode<K> Node;
 
 public:
-	typedef RbTreeItr<K> Iterator;
-	typedef RbTreeConstItr<K> ConstIterator;
+	typedef TRbTreeItr<K> Iterator;
+	typedef TRbTreeConstItr<K> ConstIterator;
 
-	RbTree(void);
+	TRbTree(void);
 
 	void insert(const K& key);
 	void erase(const K& key);
 	void erase(const ConstIterator& itr);
 
-	Iterator find(const K& key) { return Iterator(const_cast<const RbTree*>(this)->find(key)); }
-	Iterator begin(void) { return Iterator(const_cast<const RbTree*>(this)->begin()); }
-	Iterator end(void) { return Iterator(const_cast<const RbTree*>(this)->begin()); }
-	Iterator last(void) { return Iterator(const_cast<const RbTree*>(this)->last()); }
+	Iterator find(const K& key) { return Iterator(const_cast<const TRbTree*>(this)->find(key)); }
+	Iterator begin(void) { return Iterator(const_cast<const TRbTree*>(this)->begin()); }
+	Iterator end(void) { return Iterator(const_cast<const TRbTree*>(this)->begin()); }
+	Iterator last(void) { return Iterator(const_cast<const TRbTree*>(this)->last()); }
 
 	ConstIterator find(const K& key) const;
 	ConstIterator begin(void) const;
@@ -127,16 +127,16 @@ private:
 	void eraseFixup(Node* x);
 };
 
-// RbTreeNode
+// TRbTreeNode
 //
 template <typename K>
-RbTreeNode<K>* RbTreeNode<K>::NIL = new RbTreeNode();
+TRbTreeNode<K>* TRbTreeNode<K>::NIL = new TRbTreeNode();
 
-// RbTreeItrBase
+// TRbTreeItrBase
 //
 template <typename K>
 void
-RbTreeItrBase<K>::increment(void)
+TRbTreeItrBase<K>::increment(void)
 {
 	assert(m_node != NULL);
 
@@ -167,7 +167,7 @@ RbTreeItrBase<K>::increment(void)
 
 template <typename K>
 void
-RbTreeItrBase<K>::decrement(void)
+TRbTreeItrBase<K>::decrement(void)
 {
 	assert(m_node != NULL);
 
@@ -196,17 +196,17 @@ RbTreeItrBase<K>::decrement(void)
 	return;
 }
 
-// RbTree
+// TRbTree
 //
 template <typename K>
-RbTree<K>::RbTree(void)
+TRbTree<K>::TRbTree(void)
 {
 	m_root = Node::NIL;
 }
 
 template <typename K>
-typename RbTree<K>::ConstIterator
-RbTree<K>::begin(void) const
+typename TRbTree<K>::ConstIterator
+TRbTree<K>::begin(void) const
 {
 	Node* node = m_root;
 	if (m_root == Node::NIL) return end();
@@ -215,15 +215,15 @@ RbTree<K>::begin(void) const
 }
 
 template <typename K>
-typename RbTree<K>::ConstIterator
-RbTree<K>::end(void) const
+typename TRbTree<K>::ConstIterator
+TRbTree<K>::end(void) const
 {
 	return ConstIterator(this, NULL);
 }
 
 template <typename K>
-typename RbTree<K>::ConstIterator
-RbTree<K>::last(void) const
+typename TRbTree<K>::ConstIterator
+TRbTree<K>::last(void) const
 {
 	Node* node = m_root;
 	if (m_root == Node::NIL) return end();
@@ -233,7 +233,7 @@ RbTree<K>::last(void) const
 
 template <typename K>
 void
-RbTree<K>::insert(const K& key)
+TRbTree<K>::insert(const K& key)
 {
 	Node* node = new Node();
 	node->m_color = Node::RED;
@@ -243,7 +243,7 @@ RbTree<K>::insert(const K& key)
 
 template <typename K>
 void
-RbTree<K>::erase(const K& key)
+TRbTree<K>::erase(const K& key)
 {
 	Iterator itr = find(key);
 
@@ -253,15 +253,15 @@ RbTree<K>::erase(const K& key)
 
 template <typename K>
 void
-RbTree<K>::erase(const ConstIterator& itr)
+TRbTree<K>::erase(const ConstIterator& itr)
 {
 	if (itr != end())
 		erase(const_cast<Node*>(itr.m_node));
 }
 
 template <typename K>
-typename RbTree<K>::ConstIterator
-RbTree<K>::find(const K& key) const
+typename TRbTree<K>::ConstIterator
+TRbTree<K>::find(const K& key) const
 {
 	Node* node = m_root;
 
@@ -280,7 +280,7 @@ RbTree<K>::find(const K& key) const
 
 template <typename K>
 inline void
-RbTree<K>::leftRotate(Node* x)
+TRbTree<K>::leftRotate(Node* x)
 {
 	Node* y = x->m_right;
 	x->m_right = y->m_left;
@@ -303,7 +303,7 @@ RbTree<K>::leftRotate(Node* x)
 
 template <typename K>
 inline void
-RbTree<K>::rightRotate(Node* x)
+TRbTree<K>::rightRotate(Node* x)
 {
 	Node* y = x->m_left;
 	x->m_left = y->m_right;
@@ -326,7 +326,7 @@ RbTree<K>::rightRotate(Node* x)
 
 template <typename K>
 inline void
-RbTree<K>::insert(Node* z)
+TRbTree<K>::insert(Node* z)
 {
 	Node* y = Node::NIL;
 	Node* x = m_root;
@@ -359,7 +359,7 @@ RbTree<K>::insert(Node* z)
 
 template <typename K>
 inline void
-RbTree<K>::insertFixup(Node* z)
+TRbTree<K>::insertFixup(Node* z)
 {
 	while (z->m_parent->m_color == Node::RED)
 	{
@@ -418,7 +418,7 @@ RbTree<K>::insertFixup(Node* z)
 
 template <typename K>
 void
-RbTree<K>::transplant(Node* u, Node* v)
+TRbTree<K>::transplant(Node* u, Node* v)
 {
 	if (u->m_parent == Node::NIL)
 		m_root = v;
@@ -431,8 +431,8 @@ RbTree<K>::transplant(Node* u, Node* v)
 }
 
 template <typename K>
-typename RbTree<K>::Node*
-RbTree<K>::minimum(Node* x)
+typename TRbTree<K>::Node*
+TRbTree<K>::minimum(Node* x)
 {
 	while (x->m_left != Node::NIL)
 		x = x->m_left;
@@ -441,7 +441,7 @@ RbTree<K>::minimum(Node* x)
 
 template <typename K>
 void
-RbTree<K>::erase(Node* z)
+TRbTree<K>::erase(Node* z)
 {
 	Node* x = NULL;
 	Node* y = z;
@@ -486,7 +486,7 @@ RbTree<K>::erase(Node* z)
 
 template <typename K>
 void
-RbTree<K>::eraseFixup(Node* x)
+TRbTree<K>::eraseFixup(Node* x)
 {
 	while (x != m_root && x->m_color == Node::BLACK)
 	{
