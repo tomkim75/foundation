@@ -62,7 +62,7 @@ public:
     bool operator!=(const TRbTreeConstItr<K>& other) const { return m_node != other.m_node; }
     TRbTreeItr& operator++(void) { increment(); return *this; }
     TRbTreeItr& operator--(void) { decrement(); return *this; }
-    K& operator*(void) { return const_cast<Node*>(m_node)->m_key; }
+    K& operator*(void) { return m_node->m_key; }
 
 private:
 
@@ -242,7 +242,7 @@ TRbTree<K>::insert(const K& key)
     {
         if (node->m_key < m_first->m_key)
             m_first = node;
-        else if (node->m_key > m_last->m_key)
+        else if (m_last->m_key < node->m_key)
             m_last = node;
     }
 }
@@ -291,7 +291,7 @@ TRbTree<K>::find(const K& key) const
     {
         if (key < node->m_key)
             node = node->m_left;
-        else if (key > node->m_key)
+        else if (node->m_key < key)
             node = node->m_right;
         else
             return ConstIterator(this, node);
@@ -359,7 +359,7 @@ TRbTree<K>::insert(Node* z)
 
         if (z->m_key < x->m_key)
             x = x->m_left;
-        else if (z->m_key > x->m_key)
+        else if (x->m_key < z->m_key)
             x = x->m_right;
         else
         {
