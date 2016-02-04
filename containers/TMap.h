@@ -82,16 +82,18 @@ private:
 template <typename K, typename V>
 class TMap : private TRbTree<TMapPair<K, V> >
 {
+    typedef TMapPair<K, V> Pair;
+
 public:
 
     typedef TMapItr<K, V> Iterator;
     typedef TMapConstItr<K, V> ConstIterator;
 
-    void insert(const K& key, const V& value) { TRbTree::insert(TMapPair<K, V>(key, value)); }
-    void erase(const K& key) { TRbTree::erase(TMapPair(key)); }
+    void insert(const K& key, const V& value) { TRbTree::insert(Pair(key, value)); }
+    void erase(const K& key) { TRbTree::erase(Pair(key)); }
     void erase(Iterator itr) { TRbTree::erase(itr.m_baseItr); }
 
-    Iterator find(const K& key) { return Iterator(TRbTree::find(TMapPair<K, V>(key))); }
+    Iterator find(const K& key) { return Iterator(TRbTree::find(Pair(key))); }
     Iterator begin() { return Iterator(TRbTree::begin()); }
     Iterator end() { return Iterator(TRbTree::end()); }
     Iterator last() { return Iterator(TRbTree::last()); }
