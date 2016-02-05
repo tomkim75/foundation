@@ -96,7 +96,12 @@ public:
     void erase(iterator itr) { TRbTree::erase(itr.m_baseItr); }
 
     iterator find(const K& key) { return iterator(TRbTree::find(Pair(key))); }
-    iterator begin() { return iterator(TRbTree::begin()); }
-    iterator end() { return iterator(TRbTree::end()); }
-    iterator last() { return iterator(TRbTree::last()); }
+    iterator begin(void) { return iterator(TRbTree::begin()); }
+    iterator end(void) { return iterator(TRbTree::end()); }
+    iterator last(void) { return iterator(TRbTree::last()); }
+
+    const_iterator find(const K& key) const { return const_iterator(TRbTree::find(Pair(key))); }
+    const_iterator begin(void) const { return const_iterator(TRbTree::begin()); }
+    const_iterator end(void) const { return const_iterator(TRbTree::end()); }
+    const_iterator last(void) const { return const_iterator(TRbTree::last()); }
 };

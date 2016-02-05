@@ -27,7 +27,7 @@ private:
     TRbTreeNode* m_left;
     K m_key;
 
-    TRbTreeNode(void) : m_color(BLACK), m_parent(NIL), m_right(NIL), m_left(NIL), m_key(0) { }
+    TRbTreeNode(void) : m_color(BLACK), m_parent(NIL), m_right(NIL), m_left(NIL) { }
 };
 
 template <typename K>
@@ -252,7 +252,7 @@ void
 TRbTree<K>::erase(const K& key)
 {
     iterator itr = find(key);
-    eraes(itr);
+    erase(itr);
 }
 
 template <typename K>
