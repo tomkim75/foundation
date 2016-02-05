@@ -101,24 +101,24 @@ class TRbTree
 
 public:
 
-    typedef TRbTreeItr<K> Iterator;
-    typedef TRbTreeConstItr<K> ConstIterator;
+    typedef TRbTreeItr<K> iterator;
+    typedef TRbTreeConstItr<K> const_iterator;
 
     TRbTree(void);
 
     void insert(const K& key);
     void erase(const K& key);
-    void erase(Iterator itr);
+    void erase(iterator itr);
 
-    Iterator find(const K& key) { return Iterator(const_cast<const TRbTree*>(this)->find(key)); }
-    Iterator begin(void) { return Iterator(this, m_first); }
-    Iterator end(void) { return Iterator(this, NULL); }
-    Iterator last(void) { return Iterator(this, m_last); }
+    iterator find(const K& key) { return iterator(const_cast<const TRbTree*>(this)->find(key)); }
+    iterator begin(void) { return iterator(this, m_first); }
+    iterator end(void) { return iterator(this, NULL); }
+    iterator last(void) { return iterator(this, m_last); }
 
-    ConstIterator find(const K& key) const;
-    ConstIterator begin(void) const { return ConstIterator(this, m_first); }
-    ConstIterator end(void) const { return ConstIterator(this, NULL); }
-    ConstIterator last(void) const { return ConstIterator(this, m_last); }
+    const_iterator find(const K& key) const;
+    const_iterator begin(void) const { return const_iterator(this, m_first); }
+    const_iterator end(void) const { return const_iterator(this, NULL); }
+    const_iterator last(void) const { return const_iterator(this, m_last); }
 
     size_t size(void) const { return m_size; }
     size_t maxDepth(void) const;
@@ -251,13 +251,13 @@ template <typename K>
 void
 TRbTree<K>::erase(const K& key)
 {
-    Iterator itr = find(key);
+    iterator itr = find(key);
     eraes(itr);
 }
 
 template <typename K>
 void
-TRbTree<K>::erase(Iterator itr)
+TRbTree<K>::erase(iterator itr)
 {
     if (itr != end())
     {
@@ -282,7 +282,7 @@ TRbTree<K>::erase(Iterator itr)
 }
 
 template <typename K>
-typename TRbTree<K>::ConstIterator
+typename TRbTree<K>::const_iterator
 TRbTree<K>::find(const K& key) const
 {
     Node* node = m_root;
@@ -294,10 +294,10 @@ TRbTree<K>::find(const K& key) const
         else if (node->m_key < key)
             node = node->m_right;
         else
-            return ConstIterator(this, node);
+            return const_iterator(this, node);
     }
 
-    return ConstIterator(this, NULL);
+    return const_iterator(this, NULL);
 }
 
 template <typename K>
