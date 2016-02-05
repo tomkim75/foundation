@@ -11,17 +11,17 @@ class TMapPair
 
 public:
 
-    TMapPair(const K& key) : m_key(key) { }
-    TMapPair(const K& key, const V& value) : m_key(key), m_value(value) { }
-    TMapPair(const TMapPair& other) : m_key(other.m_key), m_value(other.m_value) { }
+    TMapPair(const K& key) : first(key) { }
+    TMapPair(const K& key, const V& value) : first(key), second(value) { }
+    TMapPair(const TMapPair& other) : first(other.first), second(other.second) { }
     TMapPair(void) { }
 
-    bool operator<(const TMapPair& other) const { return m_key < other.m_key; }
+    bool operator<(const TMapPair& other) const { return first < other.first; }
+    TMapPair* operator->(void) { return this; }
+    const TMapPair* operator->(void) const { return this; }
 
-private:
-
-    K m_key;
-    V m_value;
+    K first;
+    V second;
 };
 
 template <typename K, typename V>
@@ -42,7 +42,8 @@ public:
     bool operator!=(const TMapConstItr<K, V>& other) const { return m_baseItr.operator!=(other.m_baseItr); }
     TMapItr& operator++(void) { ++m_baseItr; return *this; }
     TMapItr& operator--(void) { --m_baseItr; return *this; }
-    V& operator*(void) { Pair& pair = *m_baseItr; return pair.m_value; }
+    V& operator*(void) { Pair& pair = *m_baseItr; return pair.second; }
+    Pair& operator->(void) { Pair& pair = *m_baseItr; return pair; }
 
 private:
 
@@ -70,7 +71,8 @@ public:
     bool operator!=(const TMapItr<K, V>& other) const { return m_baseItr.operator!=(other.m_baseItr); }
     TMapConstItr& operator++(void) { ++m_baseItr; return *this; }
     TMapConstItr& operator--(void) { --m_baseItr; return *this; }
-    const V& operator*(void) const { const Pair& pair = *m_baseItr; return pair.m_value; }
+    const V& operator*(void) const { const Pair& pair = *m_baseItr; return pair.second; }
+    const Pair& operator->(void) const { const Pair& pair = *m_baseItr; return pair; }
 
 private:
 
@@ -86,15 +88,15 @@ class TMap : private TRbTree<TMapPair<K, V> >
 
 public:
 
-    typedef TMapItr<K, V> Iterator;
-    typedef TMapConstItr<K, V> ConstIterator;
+    typedef TMapItr<K, V> iterator;
+    typedef TMapConstItr<K, V> const_iterator;
 
     void insert(const K& key, const V& value) { TRbTree::insert(Pair(key, value)); }
     void erase(const K& key) { TRbTree::erase(Pair(key)); }
-    void erase(Iterator itr) { TRbTree::erase(itr.m_baseItr); }
+    void erase(iterator itr) { TRbTree::erase(itr.m_baseItr); }
 
-    Iterator find(const K& key) { return Iterator(TRbTree::find(Pair(key))); }
-    Iterator begin() { return Iterator(TRbTree::begin()); }
-    Iterator end() { return Iterator(TRbTree::end()); }
-    Iterator last() { return Iterator(TRbTree::last()); }
+    iterator find(const K& key) { return iterator(TRbTree::find(Pair(key))); }
+    iterator begin() { return iterator(TRbTree::begin()); }
+    iterator end() { return iterator(TRbTree::end()); }
+    iterator last() { return iterator(TRbTree::last()); }
 };
