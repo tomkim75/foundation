@@ -22,14 +22,16 @@ template <typename V>
 class TListItr
 {
     typedef TListNode<V> Node;
+    template <typename K> friend class TList;
 
 public:
 
     TListItr(Node* node) : m_node(node) { }
 
-    TListItr& operator++(void) { assert(m_node != NULL); m_node = m_node->m_next; return *this; }
     bool operator==(const TListItr& other) const { return m_node == other.m_node; }
     bool operator!=(const TListItr& other) const { return m_node != other.m_node; }
+    TListItr& operator++(void) { assert(m_node != NULL); m_node = m_node->m_next; return *this; }
+    TListItr& operator--(void) { assert(m_node != NULL); m_node = m_node->m_prev; return *this; }
     V& operator*(void) { return m_node->m_value; }
 
 private:
@@ -51,12 +53,15 @@ public:
 
     void push_front(const V& value);
     void push_back(const V& value);
+    void push_after(iterator itr, const V& value);
+    void push_before(iterator itr, const V& value);
 
     // Return is void because return of V is inefficient requiring V to be
     // copied to lvalue.
     //
     void pop_front(void);
     void pop_back(void);
+    void pop_at(iterator itr);
 
     V& front(void);
     V& back(void);
@@ -71,15 +76,18 @@ public:
     //const_iterator begin(void) const;
     //const_iterator end(void) const;
 
+    size_t size(void) const { return m_size; }
+
 protected:
 
     Node* m_head;
     Node* m_tail;
+    size_t m_size;
 };
 
 template <typename V>
 TList<V>::TList(void)
-    : m_head(NULL), m_tail(NULL)
+    : m_head(NULL), m_tail(NULL), m_size(0)
 { }
 
 template <typename V>
@@ -99,6 +107,8 @@ TList<V>::push_front(const V& value)
         m_head->m_prev = newNode;
         m_head = newNode;
     }
+
+    m_size++;
 }
 
 template <typename V>
@@ -118,6 +128,52 @@ TList<V>::push_back(const V& value)
         m_tail->m_next = newNode;
         m_tail = newNode;
     }
+
+    m_size++;
+}
+
+template <typename V>
+void
+TList<V>::push_after(iterator itr, const V& value)
+{
+    assert(itr != NULL);
+
+    Node* newNode = new Node(value);
+    Node* nextNode = itr.m_node->m_next;
+
+    newNode->m_prev = itr.m_node;
+    newNode->m_next = nextNode;
+    itr.m_node->m_next = newNode;
+
+    if (nextNode != NULL)
+        nextNode->m_prev = newNode;
+
+    if (m_tail == itr.m_node)
+        m_tail = newNode;
+
+    m_size++;
+}
+
+template <typename V>
+void
+TList<V>::push_before(iterator itr, const V& value)
+{
+    assert(itr != NULL);
+
+    Node* newNode = new Node(value);
+    Node* prevNode = itr.m_node->m_prev;
+
+    newNode->m_next = itr.m_node;
+    newNode->m_prev = prevNode;
+    itr.m_node->m_prev = newNode;
+
+    if (prevNode != NULL)
+        prevNode->m_next = newNode;
+
+    if (m_head == itr.m_node)
+        m_head = newNode;
+
+    m_size++;
 }
 
 template <typename V>
@@ -135,6 +191,7 @@ TList<V>::pop_front(void)
         m_head->m_prev = NULL;
 
     delete deleteNode;
+    m_size--;
 }
 
 template <typename V>
@@ -151,7 +208,34 @@ TList<V>::pop_back(void)
     else
         m_tail->m_next = NULL;
 
-    return value;
+    delete deleteNode;
+    m_size--;
+}
+
+template <typename V>
+void
+TList<V>::pop_at(iterator itr)
+{
+    assert(itr != end());
+
+    Node* deleteNode = itr.m_node;
+    Node* prevNode = itr.m_node->m_prev;
+    Node* nextNode = itr.m_node->m_next;
+
+    if (prevNode != NULL)
+        prevNode->m_next = nextNode;
+
+    if (nextNode != NULL)
+        nextNode->m_prev = prevNode;
+    
+    if (itr.m_node == m_tail)
+        m_tail = prevNode;
+
+    if (itr.m_node == m_head)
+        m_head = nextNode;
+
+    delete deleteNode;
+    m_size--;
 }
 
 template <typename V>
