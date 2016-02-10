@@ -5,17 +5,15 @@ class TListNode
 {
     template <typename K> friend class TList;
     template <typename K> friend class TListItr;
-    //template <typename K> friend class TListConstItr;
-
-public:
-
-    TListNode(const V& value) : m_value(value), m_prev(NULL), m_next(NULL) { }
+    template <typename K> friend class TListConstItr;
 
 private:
 
     TListNode* m_prev;
     TListNode* m_next;
     V m_value;
+
+    TListNode(const V& value) : m_value(value), m_prev(NULL), m_next(NULL) { }
 };
 
 template <typename V>
@@ -23,13 +21,16 @@ class TListItr
 {
     typedef TListNode<V> Node;
     template <typename K> friend class TList;
+    template <typename K> friend class TListConstItr;
 
 public:
 
-    TListItr(Node* node) : m_node(node) { }
+    TListItr(const TListItr& itr) : m_node(itr.m_node) { }
 
     bool operator==(const TListItr& other) const { return m_node == other.m_node; }
     bool operator!=(const TListItr& other) const { return m_node != other.m_node; }
+    bool operator==(const TListConstItr<V>& other) const { return m_node == other.m_node; }
+    bool operator!=(const TListConstItr<V>& other) const { return m_node != other.m_node; }
     TListItr& operator++(void) { assert(m_node != NULL); m_node = m_node->m_next; return *this; }
     TListItr& operator--(void) { assert(m_node != NULL); m_node = m_node->m_prev; return *this; }
     V& operator*(void) { return m_node->m_value; }
@@ -37,6 +38,35 @@ public:
 private:
 
     Node* m_node;
+
+    TListItr(Node* node) : m_node(node) { }
+};
+
+template <typename V>
+class TListConstItr
+{
+    typedef TListNode<V> Node;
+    template <typename K> friend class TList;
+    template <typename K> friend class TListItr;
+
+public:
+
+    TListConstItr(const TListConstItr& other) : m_node(other.m_node) { }
+    TListConstItr(const TListItr<V>& other) : m_node(other.m_node) { }
+
+    bool operator==(const TListConstItr& other) const { return m_node == other.m_node; }
+    bool operator!=(const TListConstItr& other) const { return m_node != other.m_node; }
+    bool operator==(const TListItr<V>& other) const { return m_node == other.m_node; }
+    bool operator!=(const TListItr<V>& other) const { return m_node != other.m_node; }
+    TListConstItr& operator++(void) { assert(m_node != NULL); m_node = m_node->m_next; return *this; }
+    TListConstItr& operator--(void) { assert(m_node != NULL); m_node = m_node->m_prev; return *this; }
+    const V& operator*(void) const { return m_node->m_value; }
+
+private:
+
+    Node* m_node;
+
+    TListConstItr(Node* node) : m_node(node) { }
 };
 
 template <typename V>
@@ -47,7 +77,7 @@ class TList
 public:
 
     typedef TListItr<V> iterator;
-    //typedef TListConstItr<V> const_iterator;
+    typedef TListConstItr<V> const_iterator;
 
     TList(void);
 
@@ -73,8 +103,9 @@ public:
     iterator last(void) { return iterator(m_tail); }
     iterator end(void) { return iterator(NULL); }
 
-    //const_iterator begin(void) const;
-    //const_iterator end(void) const;
+    const_iterator begin(void) const { return iterator(m_head); }
+    const_iterator last(void) const { return iterator(m_tail); }
+    const_iterator end(void) const { return iterator(NULL); }
 
     size_t size(void) const { return m_size; }
 
@@ -136,7 +167,7 @@ template <typename V>
 void
 TList<V>::push_after(iterator itr, const V& value)
 {
-    assert(itr != NULL);
+    assert(itr.m_node != NULL);
 
     Node* newNode = new Node(value);
     Node* nextNode = itr.m_node->m_next;
@@ -158,7 +189,7 @@ template <typename V>
 void
 TList<V>::push_before(iterator itr, const V& value)
 {
-    assert(itr != NULL);
+    assert(itr.m_node != NULL);
 
     Node* newNode = new Node(value);
     Node* prevNode = itr.m_node->m_prev;
