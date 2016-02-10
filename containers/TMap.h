@@ -1,3 +1,28 @@
+/*
+Copyright 2016 Tom Kim
+Implementation of a map container that stores key-value pairs backed by a
+red-black tree with an STL-like interface.
+
+Example:
+
+    typedef TMap<std::string, std::string> Car;
+    Car car;
+    car.insert("model", "volkswagen");
+    car.insert("make", "jetta");
+    car.insert("year", "1995");
+    car.insert("color", "black");
+
+    Car::iterator itr = car.find("color");
+    itr->second = "red";                    // change "color: black" to "color: red"
+    itr = car.find("year");
+    car.erase(itr);                         // erase "year: 1995"
+
+    for (Car::const_iterator itr = car.begin(); itr != car.end(); ++itr)
+    {
+        std::cout << itr->first << ": " << itr->second << std::endl;
+    }
+*/
+
 #pragma once
 
 #include "TMap.h"

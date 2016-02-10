@@ -1,7 +1,7 @@
-/* Copyright 2016 Tom Kim
-*
-* Implementation of red-black tree as described in Introduction to Algorithms
-* by Corman et al.
+/*
+Copyright 2016 Tom Kim
+Implementation of a red-black tree as described in Introduction to Algorithms
+by Corman et al.
 */
 #pragma once
 
@@ -54,7 +54,9 @@ class TRbTreeItr : private TRbTreeItrBase<K>
 
 public:
 
+    TRbTreeItr(Tree* tree, Node* node) : TRbTreeItrBase(tree, node) { }
     TRbTreeItr(const TRbTreeItr& other) : TRbTreeItrBase(other.m_tree, other.m_node) { }
+    TRbTreeItr(const TRbTreeConstItr<K>& other) : TRbTreeItrBase(other.m_tree, other.m_node) { } // made private to avoid conversion outside of friends
 
     bool operator==(const TRbTreeItr& other) const { return m_node == other.m_node; }
     bool operator!=(const TRbTreeItr& other) const { return m_node != other.m_node; }
@@ -64,10 +66,6 @@ public:
     TRbTreeItr& operator--(void) { decrement(); return *this; }
     K& operator*(void) { return m_node->m_key; }
 
-private:
-
-    TRbTreeItr(const TRbTreeConstItr<K>& other) : TRbTreeItrBase(other.m_tree, other.m_node) { } // made private to avoid conversion outside of friends
-    TRbTreeItr(Tree* tree, Node* node) : TRbTreeItrBase(tree, node) { }
 };
 
 template <typename K>
@@ -78,6 +76,7 @@ class TRbTreeConstItr : private TRbTreeItrBase<K>
 
 public:
 
+    TRbTreeConstItr(const Tree* tree, Node* node) : TRbTreeItrBase(const_cast<Tree*>(tree), node) { }
     TRbTreeConstItr(const TRbTreeConstItr& other) : TRbTreeItrBase(other.m_tree, other.m_node) { }
     TRbTreeConstItr(const TRbTreeItr<K>& other) : TRbTreeItrBase(other.m_tree, other.m_node) { }
 
@@ -88,10 +87,6 @@ public:
     TRbTreeConstItr& operator++(void) { increment(); return *this; }
     TRbTreeConstItr& operator--(void) { decrement(); return *this; }
     const K& operator*(void) const { return m_node->m_key; }
-
-private:
-
-    TRbTreeConstItr(const Tree* tree, Node* node) : TRbTreeItrBase(const_cast<Tree*>(tree), node) { }
 };
 
 template <typename K>
