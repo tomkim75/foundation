@@ -1,3 +1,7 @@
+/*
+Copyright 2016 Tom Kim
+Implementation of a linked-list container with an STL-like interface.
+*/
 #pragma once
 
 template <typename V>
