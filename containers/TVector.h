@@ -10,7 +10,8 @@ template <typename V>
 class TVectorItr
 {
     typedef TVector<V> Vector;
-    friend class Vector;
+    template <typename V> friend class TVector;
+    template <typename K> friend class TVectorConstItr;
 
 public:
 
@@ -18,11 +19,11 @@ public:
 
     bool operator==(const TVectorItr& other) const { return m_pos == other.m_pos; }
     bool operator!=(const TVectorItr& other) const { return m_pos != other.m_pos; }
-    //bool operator==(const TVectorConstItr<V>& other) const { return m_pos == other.m_pos; }
-    //bool operator!=(const TVectorConstItr<V>& other) const { return m_pos != other.m_pos; }
-    TListItr& operator++(void) { assert(m_size != -1); m_pos++; if (m_pos == m_vector.m_size) m_pos = -1; }
-    TListItr& operator--(void) { assert(m_size != -1); m_pos--; }
-    V& operator*(void) { return m_vector.m_array[m_pos]; }
+    bool operator==(const TVectorConstItr<V>& other) const { return m_pos == other.m_pos; }
+    bool operator!=(const TVectorConstItr<V>& other) const { return m_pos != other.m_pos; }
+    TVectorItr& operator++(void) { assert(m_vector->m_size != -1); m_pos++; if (m_pos == m_vector->m_size) m_pos = -1; return *this;  }
+    TVectorItr& operator--(void) { assert(m_vector->m_size != -1); m_pos--; return *this; }
+    V& operator*(void) { return m_vector->m_array[m_pos]; }
 
 private:
 
@@ -33,14 +34,45 @@ private:
 };
 
 template <typename V>
+class TVectorConstItr
+{
+    typedef TVector<V> Vector;
+    template <typename V> friend class TVector;
+    template <typename V> friend class TVectorItr;
+
+public:
+
+    TVectorConstItr(const TVectorConstItr& itr) : m_vector(itr.m_vector), m_pos(itr.m_pos) { }
+    TVectorConstItr(const TVectorItr<V>& itr) : m_vector(itr.m_vector), m_pos(itr.m_pos) { }
+
+    bool operator==(const TVectorConstItr& other) const { return m_pos == other.m_pos; }
+    bool operator!=(const TVectorConstItr& other) const { return m_pos != other.m_pos; }
+    bool operator==(const TVectorItr<V>& other) const { return m_pos == other.m_pos; }
+    bool operator!=(const TVectorItr<V>& other) const { return m_pos != other.m_pos; }
+    TVectorConstItr& operator++(void) { assert(m_vector->m_size != -1); m_pos++; if (m_pos == m_vector->m_size) m_pos = -1; return *this;  }
+    TVectorConstItr& operator--(void) { assert(m_vector->m_size != -1); m_pos--; return *this;  }
+    const V& operator*(void) const { return m_vector->m_array[m_pos]; }
+
+private:
+
+    Vector* m_vector;
+    size_t m_pos;
+
+    TVectorConstItr(Vector* vector, size_t pos) : m_vector(vector), m_pos(pos) { }
+};
+
+
+template <typename V>
 class TVector
 {
     typedef TVector<V> Node;
+    template <typename K> friend class TVectorItr;
+    template <typename K> friend class TVectorConstItr;
 
 public:
 
     typedef TVectorItr<V> iterator;
-    //typedef TVectorConstItr<V> const_iterator;
+    typedef TVectorConstItr<V> const_iterator;
 
     TVector(void);
     TVector(size_t capacity);
@@ -51,9 +83,16 @@ public:
     V& back(void);
     const V& back(void) const;
 
-    iterator begin(void) { return iterator(0); }
-    iterator last(void) { return iterator(m_size - 1); }
-    iterator end(void) { return iterator(-1); }
+    iterator begin(void) { return iterator(this, 0); }
+    iterator last(void) { return iterator(this, m_size - 1); }
+    iterator end(void) { return iterator(this, -1); }
+
+    const_iterator begin(void) const { return const_iterator(this, 0); }
+    const_iterator last(void) const { return const_iterator(this, m_size - 1); }
+    const_iterator end(void) const { return const_iterator(this, -1); }
+
+    V* buf(void) const { return m_array; }
+    size_t size(void) const { return m_size; }
 
 private:
 
