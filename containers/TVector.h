@@ -99,6 +99,8 @@ private:
     V* m_array;
     size_t m_capacity;
     size_t m_size;
+
+    void grow(size_t capacity);
 };
 
 template <typename V>
@@ -110,14 +112,39 @@ template <typename V>
 TVector<V>::TVector(size_t capacity)
     : m_array(NULL), m_capacity(capacity), m_size(0)
 {
-    m_array = static_cast<V*>(operator new(sizeof(V) * m_capacity));
+    grow(capacity);
+}
+
+template <typename V>
+void
+TVector<V>::grow(size_t capacity)
+{
+    size_t capacityBytes = sizeof(V) * capacity;
+    V* newArray = static_cast<V*>(operator new(capacityBytes));
+
+    if (newArray == NULL)
+        throw std::bad_alloc();
+
+    for (size_t i = 0; i < m_size; i++)
+    {
+        V& v = m_array[i];
+        new (newArray + i) V(v);
+    }
+
+    delete[] m_array;
+    m_array = newArray;
+    m_capacity = capacity;
 }
 
 template <typename V>
 void
 TVector<V>::push_back(const V& value)
 {
-    assert(m_size + 1 <= m_capacity);
+    if (m_capacity == 0)
+        grow(1);
+    else if (m_size + 1 > m_capacity)
+        grow(m_capacity * 2);
+
     V* v = new (m_array + m_size) V(value);
     m_size++;
 }
@@ -127,8 +154,8 @@ void
 TVector<V>::pop_back(void)
 {
     assert(m_size != 0);
-    V* v = &(m_array[m_size - 1]);
-    v->~V();
+    V& v = m_array[m_size - 1];
+    v.~V();
     m_size--;
 }
 
@@ -136,7 +163,7 @@ template <typename V>
 V&
 TVector<V>::back(void)
 {
-    assert(m_size + 1 <= m_capacity);
+    assert(m_size > 0);
     return m_array[m_size - 1];
 }
 
@@ -144,6 +171,6 @@ template <typename V>
 const V&
 TVector<V>::back(void) const
 {
-    assert(m_size + 1 <= m_capacity);
+    assert(m_size > 0);
     return m_array[m_size - 1];
 }
