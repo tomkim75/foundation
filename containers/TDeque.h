@@ -15,21 +15,21 @@ class TDequeItr
 
 public:
 
-    TDequeItr(const TDequeItr& itr) : m_vector(itr.m_vector), m_pos(itr.m_pos) { }
+    TDequeItr(const TDequeItr& itr) : m_deque(itr.m_deque), m_pos(itr.m_pos) { }
 
     bool operator==(const TDequeItr& other) const { return m_pos == other.m_pos; }
     bool operator!=(const TDequeItr& other) const { return m_pos != other.m_pos; }
     bool operator==(const TDequeConstItr<V>& other) const { return m_pos == other.m_pos; }
     bool operator!=(const TDequeConstItr<V>& other) const { return m_pos != other.m_pos; }
-    TDequeItr& operator++(void) { assert(m_vector->m_size != -1); m_pos++; if (m_pos == m_vector->m_size) m_pos = -1; return *this; }
-    TDequeItr& operator--(void) { assert(m_vector->m_size != -1); m_pos--; return *this; }
-    V& operator*(void) { return m_vector->m_array[m_pos]; }
+    TDequeItr& operator++(void) { assert(m_deque->m_size != -1); m_pos++; if (m_pos == m_deque->m_size) m_pos = -1; return *this; }
+    TDequeItr& operator--(void) { assert(m_deque->m_size != -1); m_pos--; return *this; }
+    V& operator*(void) { return m_deque->m_array[m_pos]; }
 
 private:
 
-    TDequeItr(Vector* vector, size_t pos) : m_vector(vector), m_pos(pos) { }
+    TDequeItr(Vector* deque, size_t pos) : m_deque(deque), m_pos(pos) { }
 
-    Vector* m_vector;
+    Vector* m_deque;
     size_t m_pos;
 };
 
@@ -42,22 +42,22 @@ class TDequeConstItr
 
 public:
 
-    TDequeConstItr(const TDequeConstItr& itr) : m_vector(itr.m_vector), m_pos(itr.m_pos) { }
-    TDequeConstItr(const TDequeItr<V>& itr) : m_vector(itr.m_vector), m_pos(itr.m_pos) { }
+    TDequeConstItr(const TDequeConstItr& itr) : m_deque(itr.m_deque), m_pos(itr.m_pos) { }
+    TDequeConstItr(const TDequeItr<V>& itr) : m_deque(itr.m_deque), m_pos(itr.m_pos) { }
 
     bool operator==(const TDequeConstItr& other) const { return m_pos == other.m_pos; }
     bool operator!=(const TDequeConstItr& other) const { return m_pos != other.m_pos; }
     bool operator==(const TDequeItr<V>& other) const { return m_pos == other.m_pos; }
     bool operator!=(const TDequeItr<V>& other) const { return m_pos != other.m_pos; }
-    TDequeConstItr& operator++(void) { assert(m_vector->m_size != -1); m_pos++; if (m_pos == m_vector->m_size) m_pos = -1; return *this; }
-    TDequeConstItr& operator--(void) { assert(m_vector->m_size != -1); m_pos--; return *this; }
-    const V& operator*(void) const { return m_vector->m_array[m_pos]; }
+    TDequeConstItr& operator++(void) { assert(m_deque->m_size != -1); m_pos++; if (m_pos == m_deque->m_size) m_pos = -1; return *this; }
+    TDequeConstItr& operator--(void) { assert(m_deque->m_size != -1); m_pos--; return *this; }
+    const V& operator*(void) const { return m_deque->m_array[m_pos]; }
 
 private:
 
-    TDequeConstItr(Vector* vector, size_t pos) : m_vector(vector), m_pos(pos) { }
+    TDequeConstItr(Vector* deque, size_t pos) : m_deque(deque), m_pos(pos) { }
 
-    Vector* m_vector;
+    Vector* m_deque;
     size_t m_pos;
 };
 
