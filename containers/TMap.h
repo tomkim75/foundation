@@ -72,9 +72,9 @@ public:
 
 private:
 
-    BaseItr m_baseItr;
-
     TMapItr(const BaseItr& baseItr) : m_baseItr(baseItr) { }
+
+    BaseItr m_baseItr;
 };
 
 template <typename K, typename V>
@@ -101,9 +101,9 @@ public:
 
 private:
 
-    BaseItr m_baseItr;
-
     TMapConstItr(const BaseItr& baseItr) : m_baseItr(baseItr) { }
+
+    BaseItr m_baseItr;
 };
 
 template <typename K, typename V>

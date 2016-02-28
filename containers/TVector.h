@@ -27,10 +27,10 @@ public:
 
 private:
 
+    TVectorItr(Vector* vector, size_t pos) : m_vector(vector), m_pos(pos) { }
+
     Vector* m_vector;
     size_t m_pos;
-
-    TVectorItr(Vector* vector, size_t pos) : m_vector(vector), m_pos(pos) { }
 };
 
 template <typename V>
@@ -55,10 +55,10 @@ public:
 
 private:
 
+    TVectorConstItr(Vector* vector, size_t pos) : m_vector(vector), m_pos(pos) { }
+
     Vector* m_vector;
     size_t m_pos;
-
-    TVectorConstItr(Vector* vector, size_t pos) : m_vector(vector), m_pos(pos) { }
 };
 
 
@@ -96,11 +96,11 @@ public:
 
 private:
 
+    void grow(size_t capacity);
+
     V* m_array;
     size_t m_capacity;
     size_t m_size;
-
-    void grow(size_t capacity);
 };
 
 template <typename V>
