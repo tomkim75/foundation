@@ -13,11 +13,11 @@ class TListNode
 
 private:
 
+    TListNode(const V& value) : m_value(value), m_prev(NULL), m_next(NULL) { }
+
     TListNode* m_prev;
     TListNode* m_next;
     V m_value;
-
-    TListNode(const V& value) : m_value(value), m_prev(NULL), m_next(NULL) { }
 };
 
 template <typename V>
@@ -41,9 +41,9 @@ public:
 
 private:
 
-    Node* m_node;
-
     TListItr(Node* node) : m_node(node) { }
+
+    Node* m_node;
 };
 
 template <typename V>
@@ -68,9 +68,9 @@ public:
 
 private:
 
-    Node* m_node;
-
     TListConstItr(Node* node) : m_node(node) { }
+
+    Node* m_node;
 };
 
 template <typename V>

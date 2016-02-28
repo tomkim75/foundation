@@ -19,15 +19,15 @@ class TRbTreeNode
 private:
 
     enum Color { RED, BLACK };
-    static TRbTreeNode* NIL;
 
+    TRbTreeNode(void) : m_color(BLACK), m_parent(NIL), m_right(NIL), m_left(NIL) { }
+
+    static TRbTreeNode* NIL;
     Color m_color;
     TRbTreeNode* m_parent;
     TRbTreeNode* m_right;
     TRbTreeNode* m_left;
     K m_key;
-
-    TRbTreeNode(void) : m_color(BLACK), m_parent(NIL), m_right(NIL), m_left(NIL) { }
 };
 
 template <typename K>
@@ -38,12 +38,12 @@ protected:
     typedef TRbTreeNode<K> Node;
     typedef TRbTree<K> Tree;
 
-    Tree* m_tree;
-    Node* m_node;
-
     TRbTreeItrBase(Tree* tree, Node* node) : m_tree(tree), m_node(node) { }
     void increment(void);
     void decrement(void);
+
+    Tree* m_tree;
+    Node* m_node;
 };
 
 template <typename K>
@@ -120,11 +120,6 @@ public:
 
 private:
 
-    Node* m_root;
-    Node* m_first;
-    Node* m_last;
-    size_t m_size;
-
     void leftRotate(Node* x);
     void rightRotate(Node* x);
     void insert(Node* z);
@@ -136,6 +131,11 @@ private:
     void eraseFixup(Node* x);
 
     size_t maxDepth(Node* node, size_t depth) const;
+
+    Node* m_root;
+    Node* m_first;
+    Node* m_last;
+    size_t m_size;
 };
 
 // TRbTreeNode
