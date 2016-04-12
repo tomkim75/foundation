@@ -11,26 +11,27 @@ class TDequeItr
 {
     typedef TDeque<V> Deque;
     template <typename V> friend class TDeque;
-    template <typename K> friend class TDequeConstItr;
+    template <typename V> friend class TDequeConstItr;
 
 public:
 
-    TDequeItr(const TDequeItr& itr) : m_deque(itr.m_deque), m_pos(itr.m_pos) { }
+    TDequeItr(const TDequeItr& itr) : m_deque(itr.m_deque), m_pos(itr.m_pos), m_from(itr.m_from) { }
 
-    bool operator==(const TDequeItr& other) const { return m_pos == other.m_pos; }
-    bool operator!=(const TDequeItr& other) const { return m_pos != other.m_pos; }
-    bool operator==(const TDequeConstItr<V>& other) const { return m_pos == other.m_pos; }
-    bool operator!=(const TDequeConstItr<V>& other) const { return m_pos != other.m_pos; }
+    bool operator==(const TDequeItr& other) const { return ((m_pos == -1 && other.m_pos == -1) || ((m_pos + m_from) == (other.m_pos + other.m_from))); }
+    bool operator!=(const TDequeItr& other) const { return !(operator==(other)); }
+    bool operator==(const TDequeConstItr<V>& other) const { return ((m_pos == -1 && other.m_pos == -1) || ((m_pos + m_from) == (other.m_pos + other.m_from))); }
+    bool operator!=(const TDequeConstItr<V>& other) const { return !(operator==(other)); }
     TDequeItr& operator++(void);
     TDequeItr& operator--(void);
-    V& operator*(void) { return m_deque->m_array[m_pos]; }
+    V& operator*(void);
 
 private:
 
-    TDequeItr(Deque* deque, size_t pos) : m_deque(deque), m_pos(pos) { }
+    TDequeItr(Deque* deque, size_t pos, size_t from) : m_deque(deque), m_pos(pos), m_from(from) { }
 
     Deque* m_deque;
     size_t m_pos;
+    size_t m_from;
 };
 
 template <typename V>
@@ -42,23 +43,24 @@ class TDequeConstItr
 
 public:
 
-    TDequeConstItr(const TDequeConstItr& itr) : m_deque(itr.m_deque), m_pos(itr.m_pos) { }
-    TDequeConstItr(const TDequeItr<V>& itr) : m_deque(itr.m_deque), m_pos(itr.m_pos) { }
+    TDequeConstItr(const TDequeConstItr& itr) : m_deque(itr.m_deque), m_pos(itr.m_pos), m_from(itr.m_from) { }
+    TDequeConstItr(const TDequeItr<V>& itr) : m_deque(itr.m_deque), m_pos(itr.m_pos), m_from(itr.m_from) { }
 
-    bool operator==(const TDequeConstItr& other) const { return m_pos == other.m_pos; }
-    bool operator!=(const TDequeConstItr& other) const { return m_pos != other.m_pos; }
-    bool operator==(const TDequeItr<V>& other) const { return m_pos == other.m_pos; }
-    bool operator!=(const TDequeItr<V>& other) const { return m_pos != other.m_pos; }
+    bool operator==(const TDequeConstItr& other) const { return ((m_pos == -1 && other.m_pos == -1) || ((m_pos + m_from) == (other.m_pos + other.m_from))); }
+    bool operator!=(const TDequeConstItr& other) const { return !(operator==(other)); }
+    bool operator==(const TDequeItr<V>& other) const { return ((m_pos == -1 && other.m_pos == -1) || ((m_pos + m_from) == (other.m_pos + other.m_from))); }
+    bool operator!=(const TDequeItr<V>& other) const { return !(operator==(other)); }
     TDequeConstItr& operator++(void);
     TDequeConstItr& operator--(void);
-    const V& operator*(void) const { return m_deque->m_array[m_pos]; }
+    const V& operator*(void) const;
 
 private:
 
-    TDequeConstItr(Deque* deque, size_t pos) : m_deque(deque), m_pos(pos) { }
+    TDequeConstItr(Deque* deque, size_t pos, size_t from) : m_deque(deque), m_pos(pos), m_from(from) { }
 
     Deque* m_deque;
     size_t m_pos;
+    size_t m_from;
 };
 
 
@@ -66,8 +68,8 @@ template <typename V>
 class TDeque
 {
     typedef TDeque<V> Node;
-    template <typename K> friend class TDequeItr;
-    template <typename K> friend class TDequeConstItr;
+    template <typename V> friend class TDequeItr;
+    template <typename V> friend class TDequeConstItr;
 
 public:
 
@@ -87,13 +89,13 @@ public:
     V& back(void);
     const V& back(void) const;
 
-    iterator begin(void) { return iterator(this, m_begin); }
-    iterator last(void) { return iterator(this, m_last); }
-    iterator end(void) { return iterator(this, -1); }
+    iterator begin(void) { return iterator(this, m_begin, 0); }
+    iterator last(void) { return iterator(this, m_last, (m_begin <= m_last) ? 0 : m_capacity); }
+    iterator end(void) { return iterator(this, -1, 0); }
 
-    const_iterator begin(void) const { return const_iterator(this, m_begin); }
-    const_iterator last(void) const { return const_iterator(this, m_last); }
-    const_iterator end(void) const { return const_iterator(this, -1); }
+    const_iterator begin(void) const { return const_iterator(this, m_begin, 0); }
+    const_iterator last(void) const { return const_iterator(this, m_last, (m_begin <= m_last) ? 0 : m_capacity); }
+    const_iterator end(void) const { return const_iterator(this, -1, 0); }
 
     V* buf(void) const { return m_array; }
     size_t size(void) const { return m_size; }
@@ -114,8 +116,23 @@ TDequeItr<V>&
 TDequeItr<V>::operator++(void)
 {
     assert(m_deque->m_size != 0);
-    m_pos = (m_pos == m_deque->m_last) ? -1 : m_pos + 1;
-    if (m_pos == m_deque->m_capacity) m_pos = 0;
+
+    if (m_pos == m_deque->m_last)
+    {
+        m_pos = -1;
+        m_from = 0;
+    }
+    else
+    {
+        m_pos++;
+
+        if (m_pos == m_deque->m_capacity)
+        {
+            m_pos = 0;
+            m_from = m_deque->m_capacity;
+        }
+    }
+
     return *this;
 }
 
@@ -124,9 +141,37 @@ TDequeItr<V>&
 TDequeItr<V>::operator--(void)
 {
     assert(m_deque->m_size != 0);
-    m_pos = (m_pos == m_deque->m_begin) ? -1 : m_pos - 1;
-    if (m_pos == -1) m_pos = m_deque->m_size - 1;
+
+    if (m_pos == m_deque->m_begin)
+    {
+        m_pos = -1;
+        m_from = 0;
+    }
+    else
+    {
+        m_pos--;
+
+        if (m_pos == -1)
+        {
+            m_pos = m_deque->m_size - 1;
+            m_from = 0;
+        }
+    }
+
     return *this;
+}
+
+template <typename V>
+V&
+TDequeItr<V>::operator*(void)
+{
+    assert(m_pos != -1);
+    size_t pos = m_pos;
+
+    if (m_from < m_deque->m_capacity)
+        pos = m_pos + m_from;
+
+    return m_deque->m_array[pos];
 }
 
 template <typename V>
@@ -134,8 +179,23 @@ TDequeConstItr<V>&
 TDequeConstItr<V>::operator++(void)
 {
     assert(m_deque->m_size != 0);
-    m_pos = (m_pos == m_deque->m_last) ? -1 : m_pos + 1;
-    if (m_pos == m_deque->m_capacity) m_pos = 0;
+
+    if (m_pos == m_deque->m_last)
+    {
+        m_pos = -1;
+        m_from = 0;
+    }
+    else
+    {
+        m_pos++;
+
+        if (m_pos == m_deque->m_capacity)
+        {
+            m_pos = 0;
+            m_from = m_deque->m_capacity;
+        }
+    }
+
     return *this;
 }
 
@@ -144,9 +204,37 @@ TDequeConstItr<V>&
 TDequeConstItr<V>::operator--(void)
 {
     assert(m_deque->m_size != 0);
-    m_pos = (m_pos == m_deque->m_begin) ? -1 : m_pos - 1;
-    if (m_pos == -1) m_pos = m_deque->m_size - 1;
+
+    if (m_pos == m_deque->m_begin)
+    {
+        m_pos = -1;
+        m_from = 0;
+    }
+    else
+    {
+        m_pos--;
+
+        if (m_pos == -1)
+        {
+            m_pos = m_deque->m_size - 1;
+            m_from = 0;
+        }
+    }
+
     return *this;
+}
+
+template <typename V>
+const V&
+TDequeConstItr<V>::operator*(void) const
+{
+    assert(m_pos != -1);
+    size_t pos = m_pos;
+
+    if (m_from < m_deque->m_capacity)
+        pos = m_pos + m_from;
+
+    return m_deque->m_array[pos];
 }
 
 template <typename V>
@@ -171,19 +259,20 @@ TDeque<V>::grow(size_t capacity)
     if (newArray == NULL)
         throw std::bad_alloc();
 
-    for (size_t i = 0, ii = m_begin; i < m_size; i++)
+    for (size_t i = 0, ii = m_begin, iii = m_begin; i < m_size; i++)
     {
         V& v = m_array[ii];
-        new (newArray + i) V(v);
-        ii++;
-        if (ii == m_capacity) ii = 0;
+        new (newArray + iii) V(v);
+
+        ii++; iii++;
+        if (ii == m_capacity)
+            ii = 0;
     }
 
     delete[] m_array;
     m_array = newArray;
     m_capacity = capacity;
-    m_begin = 0;
-    m_last = m_size - 1;
+    m_last = m_begin + m_size - 1;
 }
 
 template <typename V>
@@ -314,3 +403,4 @@ TDeque<V>::back(void) const
     assert(m_size > 0);
     return m_array[m_last];
 }
+
