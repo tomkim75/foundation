@@ -126,7 +126,7 @@ TDequeItr<V>::operator++(void)
     {
         m_pos++;
 
-        if (m_pos == m_deque->m_capacity)
+        if ((m_pos + m_from) == m_deque->m_capacity)
         {
             m_pos = 0;
             m_from = m_deque->m_capacity;
@@ -189,7 +189,7 @@ TDequeConstItr<V>::operator++(void)
     {
         m_pos++;
 
-        if (m_pos == m_deque->m_capacity)
+        if ((m_pos + m_from) == m_deque->m_capacity)
         {
             m_pos = 0;
             m_from = m_deque->m_capacity;
