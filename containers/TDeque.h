@@ -103,6 +103,7 @@ public:
 private:
 
     void grow(size_t capacity);
+    bool inBounds(size_t pos) const;
 
     V* m_array;
     size_t m_capacity;
@@ -117,7 +118,15 @@ TDequeItr<V>::operator++(void)
 {
     assert(m_deque->m_size != 0);
 
-    if (m_pos == m_deque->m_last)
+    if (m_from < m_deque->m_capacity)
+    {
+        m_pos = m_pos + m_from;
+        m_from = 0;
+    }
+
+    //assert(m_deque->inBounds(m_pos));
+
+    if (m_pos == m_deque->m_last || ! m_deque->inBounds(m_pos))
     {
         m_pos = -1;
         m_from = 0;
@@ -126,7 +135,7 @@ TDequeItr<V>::operator++(void)
     {
         m_pos++;
 
-        if ((m_pos + m_from) == m_deque->m_capacity)
+        if (m_pos == m_deque->m_capacity)
         {
             m_pos = 0;
             m_from = m_deque->m_capacity;
@@ -142,7 +151,15 @@ TDequeItr<V>::operator--(void)
 {
     assert(m_deque->m_size != 0);
 
-    if (m_pos == m_deque->m_begin)
+    if (m_from < m_deque->m_capacity)
+    {
+        m_pos = m_pos + m_from;
+        m_from = 0;
+    }
+
+    //assert(m_deque->inBounds(m_pos));
+
+    if (m_pos == m_deque->m_begin || ! m_deque->inBounds(m_pos))
     {
         m_pos = -1;
         m_from = 0;
@@ -153,7 +170,7 @@ TDequeItr<V>::operator--(void)
 
         if (m_pos == -1)
         {
-            m_pos = m_deque->m_size - 1;
+            m_pos = m_deque->m_capacity - 1;
             m_from = 0;
         }
     }
@@ -166,12 +183,15 @@ V&
 TDequeItr<V>::operator*(void)
 {
     assert(m_pos != -1);
-    size_t pos = m_pos;
 
     if (m_from < m_deque->m_capacity)
-        pos = m_pos + m_from;
+    {
+        m_pos = m_pos + m_from;
+        m_from = 0;
+    }
 
-    return m_deque->m_array[pos];
+    //assert(m_deque->inBounds(m_pos));
+    return m_deque->m_array[m_pos];
 }
 
 template <typename V>
@@ -180,7 +200,15 @@ TDequeConstItr<V>::operator++(void)
 {
     assert(m_deque->m_size != 0);
 
-    if (m_pos == m_deque->m_last)
+    if (m_from < m_deque->m_capacity)
+    {
+        m_pos = m_pos + m_from;
+        m_from = 0;
+    }
+
+    //assert(m_deque->inBounds(m_pos));
+
+    if (m_pos == m_deque->m_last || ! m_deque->inBounds(m_pos))
     {
         m_pos = -1;
         m_from = 0;
@@ -189,7 +217,7 @@ TDequeConstItr<V>::operator++(void)
     {
         m_pos++;
 
-        if ((m_pos + m_from) == m_deque->m_capacity)
+        if (m_pos == m_deque->m_capacity)
         {
             m_pos = 0;
             m_from = m_deque->m_capacity;
@@ -205,7 +233,15 @@ TDequeConstItr<V>::operator--(void)
 {
     assert(m_deque->m_size != 0);
 
-    if (m_pos == m_deque->m_begin)
+    if (m_from < m_deque->m_capacity)
+    {
+        m_pos = m_pos + m_from;
+        m_from = 0;
+    }
+
+    //assert(m_deque->inBounds(m_pos));
+
+    if (m_pos == m_deque->m_begin || ! m_deque->inBounds(m_pos))
     {
         m_pos = -1;
         m_from = 0;
@@ -216,7 +252,7 @@ TDequeConstItr<V>::operator--(void)
 
         if (m_pos == -1)
         {
-            m_pos = m_deque->m_size - 1;
+            m_pos = m_deque->m_capacity - 1;
             m_from = 0;
         }
     }
@@ -229,12 +265,15 @@ const V&
 TDequeConstItr<V>::operator*(void) const
 {
     assert(m_pos != -1);
-    size_t pos = m_pos;
 
     if (m_from < m_deque->m_capacity)
-        pos = m_pos + m_from;
+    {
+        m_pos = m_pos + m_from;
+        m_from = 0;
+    }
 
-    return m_deque->m_array[pos];
+    //assert(m_deque->inBounds(m_pos));
+    return m_deque->m_array[m_pos];
 }
 
 template <typename V>
@@ -273,6 +312,16 @@ TDeque<V>::grow(size_t capacity)
     m_array = newArray;
     m_capacity = capacity;
     m_last = m_begin + m_size - 1;
+}
+
+template <typename V>
+bool
+TDeque<V>::inBounds(size_t pos) const
+{
+    if (m_begin <= m_last)
+        return pos >= m_begin && pos <= m_last;
+    else
+        return (pos >= m_begin && pos < m_capacity) || (pos >= 0 && pos <= m_last);
 }
 
 template <typename V>
