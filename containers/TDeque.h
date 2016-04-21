@@ -32,13 +32,13 @@ public:
     V& back(void);
     const V& back(void) const;
 
-    iterator begin(void) { return iterator(this, m_begin, 0); }
-    iterator last(void) { return iterator(this, m_last, (m_begin <= m_last) ? 0 : m_capacity); }
-    iterator end(void) { return iterator(this, -1, 0); }
+    iterator begin(void) { return iterator::begin(this); }
+    iterator last(void) { return iterator::last(this); }
+    iterator end(void) { return iterator::end(this); }
 
-    const_iterator begin(void) const { return const_iterator(this, m_begin, 0); }
-    const_iterator last(void) const { return const_iterator(this, m_last, (m_begin <= m_last) ? 0 : m_capacity); }
-    const_iterator end(void) const { return const_iterator(this, -1, 0); }
+    const_iterator begin(void) const { return const_iterator::begin(this); }
+    const_iterator last(void) const { return const_iterator::last(this); }
+    const_iterator end(void) const { return const_iterator::end(this); }
 
     V* buf(void) const { return m_array; }
     size_t size(void) const { return m_size; }
@@ -97,7 +97,9 @@ template <typename V>
 bool
 TDeque<V>::inBounds(size_t pos) const
 {
-    if (m_begin <= m_last)
+    if (pos == -1)
+        return false;
+    else if (m_begin <= m_last)
         return pos >= m_begin && pos <= m_last;
     else
         return (pos >= m_begin && pos < m_capacity) || (pos >= 0 && pos <= m_last);
