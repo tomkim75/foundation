@@ -22,17 +22,16 @@ public:
 
 protected:
 
-    TDequeItrBase(Deque* deque, size_t pos, size_t from) : m_deque(deque), m_pos(pos), m_from(from) { }
-    TDequeItrBase(TDequeItrBase& other) : m_deque(other.m_deque), m_pos(other.m_pos), m_from(other.m_from) { }
+    TDequeItrBase(Deque* deque, size_t pos) : m_deque(deque), m_pos(pos) { }
+    TDequeItrBase(TDequeItrBase& other) : m_deque(other.m_deque), m_pos(other.m_pos) { }
 
-    void normalize(void) const;
+    size_t getArrayPos(void) const;
     void increment(void);
     void decrement(void);
     bool equals(const TDequeItrBase& other) const;
 
     Deque* m_deque;
     size_t m_pos;
-    size_t m_from;
 };
 
 template <typename V>
@@ -58,12 +57,12 @@ public:
 
 private:
 
-    TDequeItr(Deque* deque, size_t pos, size_t from) : TDequeItrBase(deque, pos, from) { }
-    TDequeItrBase<V> asBase(void) const { return TDequeItrBase<V>(m_deque, m_pos, m_from); }
+    TDequeItr(Deque* deque, size_t pos) : TDequeItrBase(deque, pos) { }
+    TDequeItrBase<V> asBase(void) const { return TDequeItrBase<V>(m_deque, m_pos); }
 
-    static TDequeItr<V> begin(Deque* deque) { return TDequeItr(deque, deque->m_begin, 0); }
-    static TDequeItr<V> last(Deque* deque) { return TDequeItr(deque, deque->m_last, (deque->m_begin <= deque->m_last) ? 0 : deque->m_capacity); }
-    static TDequeItr<V> end(Deque* deque) { return TDequeItr(deque, -1, 0); }
+    static TDequeItr<V> begin(Deque* deque) { return TDequeItr(deque, deque->m_begin); }
+    static TDequeItr<V> last(Deque* deque) { return TDequeItr(deque, (deque->m_begin <= deque->m_last) ? deque->m_last : deque->m_capacity + deque->m_last); }
+    static TDequeItr<V> end(Deque* deque) { return TDequeItr(deque, -1); }
 };
 
 template <typename V>
@@ -90,87 +89,69 @@ public:
 
 private:
 
-    TDequeConstItr(Deque* deque, size_t pos, size_t from) : TDequeItrBase(deque, pos, from) { }
-    TDequeItrBase<V> asBase(void) const { return TDequeItrBase<V>(m_deque, m_pos, m_from); }
+    TDequeConstItr(Deque* deque, size_t pos) : TDequeItrBase(deque, pos) { }
+    TDequeItrBase<V> asBase(void) const { return TDequeItrBase<V>(m_deque, m_pos); }
 
-    static TDequeConstItr<V> begin(Deque* deque) { return TDequeConstItr(deque, deque->m_begin, 0); }
-    static TDequeConstItr<V> last(Deque* deque) { return TDequeConstItr(deque, deque->m_last, (deque->m_begin <= deque->m_last) ? 0 : deque->m_capacity); }
-    static TDequeConstItr<V> end(Deque* deque) { return TDequeConstItr(deque, -1, 0); }
+    static TDequeConstItr<V> begin(Deque* deque) { return TDequeConstItr(deque, deque->m_begin); }
+    static TDequeConstItr<V> last(Deque* deque) { return TDequeItr(deque, (deque->m_begin <= deque->m_last) ? deque->m_last : deque->m_capacity + deque->m_last); }
+    static TDequeConstItr<V> end(Deque* deque) { return TDequeConstItr(deque, -1); }
 };
 
 template<typename V>
 bool
 TDequeItrBase<V>::valid(void) const
 {
-    normalize();
+    size_t pos = getArrayPos();
     return m_deque->inBounds(m_pos);
 }
 
 template<typename V>
-void
-TDequeItrBase<V>::normalize(void) const
+size_t
+TDequeItrBase<V>::getArrayPos(void) const
 {
-    TDequeItrBase* me = const_cast<TDequeItrBase*>(this);
-
     if (m_pos == -1)
-    {
-        me->m_from = 0;
-    }
-    else if (m_from < m_deque->m_capacity)
-    {
-        me->m_pos = m_pos + m_from;
-        me->m_from = 0;
-    }
+        return -1;
+    else
+        return m_pos % m_deque->m_capacity;
 }
 
 template<typename V>
 void
 TDequeItrBase<V>::increment(void)
 {
-    normalize();
+    size_t pos = getArrayPos();
 
+    assert(m_deque->inBounds(pos));
     assert(m_deque->m_size != 0);
-    assert(m_deque->inBounds(m_pos));
 
-    if (m_pos == m_deque->m_last)
-    {
+    if (pos == m_deque->m_last)
         m_pos = -1;
-        m_from = 0;
-    }
     else
-    {
         m_pos++;
-
-        if (m_pos == m_deque->m_capacity)
-        {
-            m_pos = 0;
-            m_from = m_deque->m_capacity;
-        }
-    }
 }
 
 template<typename V>
 void
 TDequeItrBase<V>::decrement(void)
 {
-    normalize();
+    size_t pos = getArrayPos();
 
     assert(m_deque->m_size != 0);
     assert(m_deque->inBounds(m_pos));
 
-    if (m_pos == m_deque->m_begin)
+    if (pos == m_deque->m_begin)
     {
         m_pos = -1;
-        m_from = 0;
     }
     else
-    {
+    {        
         m_pos--;
 
         if (m_pos == -1)
         {
+            // pos was 0 and was in bounds, so the next valid pos is one exists
+            // should be at right edge
             m_pos = m_deque->m_capacity - 1;
-            m_from = 0;
         }
     }
 }
@@ -179,26 +160,24 @@ template<typename V>
 bool
 TDequeItrBase<V>::equals(const TDequeItrBase& other) const
 {
-    normalize();
-    other.normalize();
     assert(m_deque == other.m_deque);
-    return m_pos == other.m_pos;
+    return getArrayPos() == other.getArrayPos();
 }
 
 template <typename V>
 V&
 TDequeItr<V>::operator*(void)
 {
-    normalize();
-    assert(m_deque->inBounds(m_pos));
-    return m_deque->m_array[m_pos];
+    size_t pos = getArrayPos();
+    assert(m_deque->inBounds(pos));
+    return m_deque->m_array[pos];
 }
 
 template <typename V>
 const V&
 TDequeConstItr<V>::operator*(void) const
 {
-    normalize();
-    assert(m_deque->inBounds(m_pos));
-    return m_deque->m_array[m_pos];
+    size_t pos = getArrayPos();
+    assert(m_deque->inBounds(pos));
+    return m_deque->m_array[pos];
 }
