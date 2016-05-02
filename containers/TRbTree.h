@@ -5,7 +5,7 @@ by Corman et al.
 */
 #pragma once
 
-#include <stdlib.h>
+#include "TVector.h"
 #include <cassert>
 
 template <typename K>
@@ -93,6 +93,7 @@ template <typename K>
 class TRbTree
 {
     typedef class TRbTreeNode<K> Node;
+    typedef TVector<Node*> Stack;
 
 public:
 
@@ -104,6 +105,7 @@ public:
     void insert(const K& key);
     void erase(const K& key);
     void erase(iterator itr);
+    void clear(void);
 
     iterator find(const K& key) { return iterator(const_cast<const TRbTree*>(this)->find(key)); }
     iterator begin(void) { return iterator(this, m_first); }
@@ -118,6 +120,8 @@ public:
     size_t size(void) const { return m_size; }
     size_t maxDepth(void) const;
 
+    void copy(const TRbTree& other);
+
 private:
 
     void leftRotate(Node* x);
@@ -131,6 +135,7 @@ private:
     void eraseFixup(Node* x);
 
     size_t maxDepth(Node* node, size_t depth) const;
+    Node* createNode(Node* parent, Node* from);
 
     Node* m_root;
     Node* m_first;
@@ -613,4 +618,93 @@ TRbTree<K>::maxDepth(Node* node, size_t depth) const
     size_t leftDepth = maxDepth(node->m_left, depth);
     size_t rightDepth = maxDepth(node->m_right, depth);
     return (leftDepth > rightDepth) ? leftDepth : rightDepth;
+}
+
+template <typename K>
+void
+TRbTree<K>::copy(const TRbTree& other)
+{
+    clear();
+    if (other.m_size == 0) return;
+    m_root = createNode(other.m_root, Node::NIL);
+
+    Stack stack;
+    stack.push_back(m_root);
+    stack.push_back(other.m_root);
+
+    while (stack.size() != 0)
+    {
+        Node* myNode = stack.back();
+        Node* otherNode = stack.back();
+        stack.pop_back();
+        stack.pop_back();
+
+        if (myNode->m_right != Node::NIL)
+        {
+            myNode->m_right = createNode(myNode, otherNode->m_right);
+            stack.push_back(myNode->m_right);
+            stack.push_back(otherNode->m_right);
+        }
+
+        if (myNode->m_left != Node::NIL)
+        {
+            myNode->m_left = createNode(myNode, otherNode->m_left);
+            stack.push_back(myNode->m_left);
+            stack.push_back(otherNode->m_left);
+        }
+    }
+
+    m_size = other.m_size;
+    m_first = m_root;
+    m_last = m_root;
+
+    while (m_first != Node::NIL)
+        m_first = m_first->m_left;
+
+    while (m_last->m_right != Node::NIL)
+        m_last = m_last->m_right;
+}
+
+template <typename K>
+TRbTreeNode<K>*
+TRbTree<K>::createNode(Node* parent, Node* from)
+{
+    Node* newNode = new Node();
+    newNode->m_key = from->m_key;
+    newNode->m_color = from->m_color;
+
+    newNode->m_parent = parent;
+    newNode->m_right = Node::NIL;
+    newNode->m_left = Node::NIL;
+    return newNode;
+}
+
+template <typename K>
+void
+TRbTree<K>::clear(void)
+{
+    if (m_root != Node::NIL)
+    {
+        Stack stack;
+        stack.push_back(m_root);
+
+        while (stack.size() != 0)
+        {
+            Node* node = stack.back();
+            stack.pop_back();
+
+            if (node->m_right != Node::NIL)
+                stack.push_back(node->m_right);
+
+            if (node->m_left != Node::NIL)
+                stack.push_back(node->m_left);
+
+            delete node;
+        }
+    }
+
+    m_root = Node::NIL;
+    m_size = 0;
+    m_first = NULL;
+    m_last = NULL;
 }

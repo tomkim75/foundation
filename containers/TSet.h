@@ -15,9 +15,13 @@ public:
     typedef TRbTreeItr<K> iterator;
     typedef TRbTreeConstItr<K> const_iterator;
 
+    TSet(void) : TRbTree() { }
+    TSet(const TSet& other) : TSet() { copy(other); }
+
     void insert(const K& key) { TRbTree::insert(key); }
     void erase(const K& key) { TRbTree::erase(key); }
     void erase(const_iterator itr) { TRbTree::erase(itr); }
+    void clear(void) { TRbTree::clear(); }
 
     iterator find(const K& key) { return iterator(TRbTree::find(key)); }
     iterator begin(void) { return iterator(TRbTree::begin()); }
@@ -28,4 +32,8 @@ public:
     const_iterator begin(void) const { return const_iterator(TRbTree::begin()); }
     const_iterator end(void) const { return const_iterator(TRbTree::end()); }
     const_iterator last(void) const { return const_iterator(TRbTree::last()); }
+
+protected:
+
+    void copy(const TSet& other) { return TRbTree::copy(other); }
 };

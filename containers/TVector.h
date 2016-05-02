@@ -4,6 +4,9 @@ Implementation of a vector container with an STL-like interface.
 */
 #pragma once
 
+#include <cstddef>
+#include <cassert>
+
 template <typename V> class TVector;
 
 template <typename V>

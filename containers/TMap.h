@@ -116,9 +116,13 @@ public:
     typedef TMapItr<K, V> iterator;
     typedef TMapConstItr<K, V> const_iterator;
 
+    TMap(void) : TRbTree() { }
+    TMap(const TMap& other) : TRbTree() { copy(other); }
+
     void insert(const K& key, const V& value) { TRbTree::insert(Pair(key, value)); }
     void erase(const K& key) { TRbTree::erase(Pair(key)); }
     void erase(iterator itr) { TRbTree::erase(itr.m_baseItr); }
+    void clear(void) { TRbTree::clear(); }
 
     iterator find(const K& key) { return iterator(TRbTree::find(Pair(key))); }
     iterator begin(void) { return iterator(TRbTree::begin()); }
@@ -129,4 +133,8 @@ public:
     const_iterator begin(void) const { return const_iterator(TRbTree::begin()); }
     const_iterator end(void) const { return const_iterator(TRbTree::end()); }
     const_iterator last(void) const { return const_iterator(TRbTree::last()); }
+
+private:
+
+    void copy(const TMap& other) { return TRbTree::copy(other); }
 };
